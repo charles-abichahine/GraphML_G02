@@ -18,7 +18,7 @@ Graph learning pipeline for architectural data — dataset generation, graph con
 03_graph_analysis/   centrality metrics and spatial analysis
 04_node_classification/  GNN node classification
 05_results/          final figures and discussion
-notebooks/           faculty reference notebooks (not graded)
+notebooks/           reference notebooks
 ```
 
 ## Setup
