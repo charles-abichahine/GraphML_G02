@@ -14,15 +14,7 @@ venv/
 .ipynb_checkpoints/
 
 # CAD / large binaries
-*.ifc
-*.brep
-*.3dm
-*.rvt
-*.dwg
-*.dxf
-*.obj
-*.fbx
-*.stl
+
 
 # Model weights
 *.pth

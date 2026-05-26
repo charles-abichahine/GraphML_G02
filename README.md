@@ -1,7 +1,7 @@
 # GraphML_G02
 **IAAC MaCad · AIA26 S.3 Graph ML · 2025–26**
 
-Graph learning pipeline for architectural data — dataset generation, graph construction, analysis, and node classification.
+Graph learning pipeline for architectural data: dataset generation, graph construction, analysis, and node classification.
 
 ## Team
 | Name | GitHub |
