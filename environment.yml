@@ -1,0 +1,26 @@
+name: graphml-g02
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11.5
+  - numpy
+  - pandas
+  - scipy
+  - matplotlib
+  - scikit-learn
+  - networkx
+  - plotly
+  - ipywidgets
+  - pyyaml
+  - jupyterlab
+  - nb_conda_kernels
+  - pip
+  - pip:
+    - topologicpy
+    - torch
+    - torch_geometric
+    - pyvis
+    - ifcopenshell
+    - neo4j
+    - ollama
