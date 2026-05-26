@@ -6,7 +6,7 @@ Graph learning pipeline for architectural data — dataset generation, graph con
 ## Team
 | Name | GitHub |
 |------|--------|
-| Charles Abichahine | [@charles-abichahine](https://github.com/charles-abichahine) |
+| Charles Abi Chahine | [@charles-abichahine](https://github.com/charles-abichahine) |
 | Emilie El Chidiac | [@hi-em](https://github.com/hi-em) |
 | Lakzhmy Zaro | [@lakzhmy](https://github.com/lakzhmy) |
 | Maria Sánchez i Domínguez | [@modnas-m](https://github.com/modnas-m) |
