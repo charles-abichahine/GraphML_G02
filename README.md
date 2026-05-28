@@ -1,7 +1,7 @@
 # GraphML_G02
 **IAAC MaCad · AIA26 S.3 Graph ML · 2025–26**
 
-Graph learning pipeline for architectural data: dataset generation, graph construction, analysis, and node classification.
+Graph-based analysis and learning pipeline for architectural floor plans, using the [Modified Swiss Dwellings dataset](https://www.kaggle.com/datasets/caspervanengelenburg/modified-swiss-dwellings).
 
 ## Team
 | Name | GitHub |
@@ -13,12 +13,12 @@ Graph learning pipeline for architectural data: dataset generation, graph constr
 
 ## Structure
 ```
-01_dataset/          parametric dataset (Grasshopper + processed data)
-02_graph_construction/   TopologicPy graph building
-03_graph_analysis/   centrality metrics and spatial analysis
-04_node_classification/  GNN node classification
-05_results/          final figures and discussion
-notebooks/           reference notebooks
+01_dataset/              MSD dataset research + recreated floor plan (Rhino/GH)
+02_graph_construction/   TopologicPy graph from recreated floor plan
+03_graph_analysis/       centrality metrics and spatial analysis
+04_node_classification/  node classification using pretrained model (S06)
+05_results/              final figures and discussion
+notebooks/               reference notebooks
 ```
 
 ## Setup
