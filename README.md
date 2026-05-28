@@ -13,13 +13,17 @@ Graph-based analysis and learning pipeline for architectural floor plans, using 
 
 ## Structure
 ```
-01_dataset/              MSD dataset research + recreated floor plan (Rhino/GH)
+01_dataset/              MSD dataset + recreated floor plan (floor_plan/)
 02_graph_construction/   TopologicPy graph from recreated floor plan
 03_graph_analysis/       centrality metrics and spatial analysis
 04_node_classification/  node classification using pretrained model (S06)
 05_results/              final figures and discussion
 notebooks/               reference notebooks
+references/              research papers and links
 ```
+
+## Dataset
+Download the [Modified Swiss Dwellings dataset](https://www.kaggle.com/datasets/caspervanengelenburg/modified-swiss-dwellings) from Kaggle and place the files in `01_dataset/data/`. These files are gitignored and not committed to the repo.
 
 ## Setup
 ```bash

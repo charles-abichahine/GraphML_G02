@@ -13,7 +13,12 @@ venv/
 # Jupyter
 .ipynb_checkpoints/
 
+# Dataset (large files — download from Kaggle separately)
+01_dataset/data/
+
 # CAD / large binaries
+*.npy
+*.pickle
 
 
 # Model weights
