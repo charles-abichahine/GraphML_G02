@@ -13,6 +13,9 @@ venv/
 # Jupyter
 .ipynb_checkpoints/
 
+# Faculty reference notebooks (large, not committed)
+notebooks/
+
 # Dataset (large files — download from Kaggle separately)
 01_dataset/data/
 
