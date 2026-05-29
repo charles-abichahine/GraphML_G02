@@ -23,6 +23,9 @@ notebooks/
 *.npy
 *.pickle
 
+# Results (work in progress)
+05_results/
+
 
 # Model weights
 *.pth
