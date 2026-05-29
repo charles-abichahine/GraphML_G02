@@ -16,7 +16,7 @@ venv/
 # Dataset (large files — download from Kaggle separately)
 01_dataset/data/
 
-# CAD / large binaries
+# CAD / generated outputs
 *.npy
 *.pickle
 
