@@ -308,6 +308,35 @@ style: |
   }
   .step .t { font-size: 0.8em; font-weight: 600; color: var(--navy); margin-bottom: 2px; }
   .step .d { font-size: 0.72em; color: #777; line-height: 1.5; }
+
+  /* ── CONTENTS SLIDE ── */
+  .contents-list { margin-top: 24px; }
+  .contents-item {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--lgray);
+  }
+  .contents-item:first-child { border-top: 1px solid var(--lgray); }
+  .contents-num {
+    font-family: Georgia, serif;
+    font-size: 1.6em;
+    font-weight: 700;
+    color: var(--rust);
+    min-width: 48px;
+    line-height: 1;
+  }
+  .contents-title {
+    font-size: 0.88em;
+    color: var(--navy);
+    font-weight: 600;
+  }
+  .contents-desc {
+    font-size: 0.75em;
+    color: var(--gray);
+    margin-top: 2px;
+  }
 ---
 
 <!-- _class: title -->
@@ -327,6 +356,45 @@ style: |
       María Sánchez<br>
       Charles Abi Chahine<br>
       Emilie El Chidiac
+    </div>
+  </div>
+</div>
+
+---
+
+<div class="sidebar"><span class="seminar">Graph Machine Learning</span><span class="assignment">Final Assignment</span></div>
+<div class="inner">
+  <h1 style="color:var(--rust); font-size:1.6em; margin-bottom:4px">Contents</h1>
+  <p style="font-size:0.72em; color:var(--gray); margin-bottom:0">This week we explored…</p>
+
+  <div class="contents-list">
+    <div class="contents-item">
+      <div class="contents-num">01</div>
+      <div>
+        <div class="contents-title">Dataset</div>
+        <div class="contents-desc">Modified Swiss Dwellings — 5,372 floor plans as NetworkX graphs</div>
+      </div>
+    </div>
+    <div class="contents-item">
+      <div class="contents-num">02</div>
+      <div>
+        <div class="contents-title">Research</div>
+        <div class="contents-desc">MSD benchmark paper (ECCV 2024) · GNN node classification paper (eCAADe 2024)</div>
+      </div>
+    </div>
+    <div class="contents-item">
+      <div class="contents-num">03</div>
+      <div>
+        <div class="contents-title">Graph Structure</div>
+        <div class="contents-desc">graph_in vs graph_out — zone labels, connectivity, and room type prediction</div>
+      </div>
+    </div>
+    <div class="contents-item">
+      <div class="contents-num">04</div>
+      <div>
+        <div class="contents-title">Next Steps</div>
+        <div class="contents-desc">Floor plan recreation → graph construction → analysis → node classification</div>
+      </div>
     </div>
   </div>
 </div>
