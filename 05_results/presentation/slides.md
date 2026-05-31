@@ -32,37 +32,39 @@ style: |
 
   /* ── LEFT SIDEBAR ── */
   .sidebar {
-    width: 42px;
-    min-width: 42px;
+    width: 54px;
+    min-width: 54px;
     background: var(--rust);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 0;
+    padding: 18px 0;
     box-sizing: border-box;
   }
 
   .sidebar .seminar {
     writing-mode: vertical-rl;
     transform: rotate(180deg);
-    font-size: 0.52em;
-    color: rgba(247,248,250,0.75);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    white-space: nowrap;
+    font-size: 0.56em;
+    color: rgba(247,248,250,0.85);
+    letter-spacing: 0.06em;
+    font-style: italic;
     font-family: Calibri, sans-serif;
+    text-align: end;
   }
 
   .sidebar .assignment {
     writing-mode: vertical-rl;
     transform: rotate(180deg);
-    font-size: 0.52em;
-    color: rgba(247,248,250,0.45);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    white-space: nowrap;
+    font-size: 0.56em;
+    font-weight: 700;
+    font-style: italic;
+    color: rgba(247,248,250,0.9);
+    letter-spacing: 0.06em;
     font-family: Calibri, sans-serif;
+    align-self: flex-end;
+    padding-right: 6px;
   }
 
   /* ── INNER CONTENT WRAPPER ── */
@@ -70,28 +72,31 @@ style: |
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 32px 48px 24px 32px;
+    padding: 28px 44px 20px 28px;
     height: 100%;
     box-sizing: border-box;
     overflow: hidden;
   }
 
   /* ── SECTION LABEL ── */
+  .sec-hdr {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 6px;
+  }
   .section-num {
     font-family: Georgia, serif;
     font-size: 2.2em;
     font-weight: 700;
     color: var(--rust);
     line-height: 1;
-    margin-bottom: 2px;
   }
-
   .section-sub {
     font-size: 0.62em;
     color: var(--gray);
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    margin-bottom: 6px;
   }
 
   h1 {
@@ -106,7 +111,7 @@ style: |
   hr {
     border: none;
     border-top: 1px solid var(--lgray);
-    margin: 0 0 18px;
+    margin: 0 0 14px;
   }
 
   p {
@@ -209,16 +214,16 @@ style: |
     background: var(--lgray);
     border-radius: 4px;
     overflow: hidden;
-    margin: 14px 0;
+    margin: 10px 0;
   }
   .stat {
     flex: 1;
     background: var(--white);
-    padding: 14px 12px;
+    padding: 10px 8px;
     text-align: center;
   }
-  .stat .num { font-family: Georgia, serif; font-size: 1.7em; font-weight: 700; color: var(--rust); line-height: 1; }
-  .stat .lbl { font-size: 0.62em; color: var(--gray); margin-top: 4px; letter-spacing: 0.03em; }
+  .stat .num { font-family: Georgia, serif; font-size: 1.5em; font-weight: 700; color: var(--rust); line-height: 1; }
+  .stat .lbl { font-size: 0.58em; color: var(--gray); margin-top: 4px; letter-spacing: 0.03em; }
 
   /* ── COLS ── */
   .cols { display: flex; gap: 20px; }
@@ -228,7 +233,7 @@ style: |
   .card {
     background: var(--light);
     border-radius: 4px;
-    padding: 18px 20px;
+    padding: 14px 16px;
     height: 100%;
     box-sizing: border-box;
   }
@@ -238,63 +243,72 @@ style: |
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
   }
   .card .ttl {
     font-family: Georgia, serif;
-    font-size: 0.82em;
+    font-size: 0.78em;
     font-weight: 700;
     color: var(--navy);
-    line-height: 1.35;
+    line-height: 1.3;
     margin-bottom: 2px;
   }
-  .card .src { font-size: 0.65em; color: var(--gray); margin-bottom: 10px; }
-  .card ul   { font-size: 0.76em; color: #666; line-height: 1.6; }
+  .card .src { font-size: 0.62em; color: var(--gray); margin-bottom: 8px; }
+  .card ul   { font-size: 0.72em; color: #666; line-height: 1.55; }
   .card .note {
-    margin-top: 10px;
-    padding: 8px 12px;
+    margin-top: 8px;
+    padding: 6px 10px;
     border-left: 2px solid var(--rust);
     background: white;
     border-radius: 0 3px 3px 0;
-    font-size: 0.72em;
+    font-size: 0.68em;
     color: #444;
-    line-height: 1.5;
+    line-height: 1.45;
   }
 
   /* ── IMAGES ── */
-  .img-wrap { display: flex; gap: 16px; }
-  .img-col  { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+  .img-wrap { display: flex; gap: 14px; }
+  .img-col  { flex: 1; display: flex; flex-direction: column; gap: 4px; }
   .img-frame {
     background: var(--light);
     border-radius: 4px;
     overflow: hidden;
     flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  .img-frame img { width: 100%; height: 100%; object-fit: contain; display: block; }
-  .img-cap { font-size: 0.6em; color: #AAAAAA; text-align: center; }
+  /* contain so images are never stretched */
+  .img-frame img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  .img-cap { font-size: 0.58em; color: #AAAAAA; text-align: center; }
 
   /* ── ATTR BAR ── */
   .attr-bar {
     display: flex;
-    margin-top: 12px;
+    margin-top: 10px;
     background: var(--lgray);
     border-radius: 4px;
     overflow: hidden;
     gap: 1px;
   }
-  .attr { flex: 1; background: var(--white); padding: 10px 14px; }
-  .attr .k { font-size: 0.56em; color: var(--gray); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 3px; }
-  .attr .v { font-size: 0.76em; font-weight: 600; color: var(--navy); }
+  .attr { flex: 1; background: var(--white); padding: 8px 12px; }
+  .attr .k { font-size: 0.56em; color: var(--gray); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px; }
+  .attr .v { font-size: 0.72em; font-weight: 600; color: var(--navy); }
   .attr .v.rust { color: var(--rust); }
   .attr .v.red  { color: var(--red); }
 
   /* ── STEPS ── */
-  .steps { display: flex; flex-direction: column; gap: 8px; }
+  .steps { display: flex; flex-direction: column; gap: 7px; }
   .step {
     display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    padding: 12px 16px;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
     background: var(--light);
     border-radius: 4px;
   }
@@ -303,37 +317,106 @@ style: |
     font-size: 1em;
     font-weight: 700;
     color: var(--rust);
-    min-width: 28px;
-    padding-top: 1px;
+    width: 36px;
+    min-width: 36px;
+    max-width: 36px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    line-height: 1;
+    text-align: left;
   }
-  .step .t { font-size: 0.8em; font-weight: 600; color: var(--navy); margin-bottom: 2px; }
-  .step .d { font-size: 0.72em; color: #777; line-height: 1.5; }
+  .step .t { font-size: 0.76em; font-weight: 600; color: var(--navy); margin-bottom: 2px; }
+  .step .d { font-size: 0.68em; color: #777; line-height: 1.45; }
+
+  /* ── CHIPS ── */
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+  .chip {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.65em;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    background: var(--light);
+    color: var(--navy);
+    border: 1px solid var(--lgray);
+  }
+  .chip.rust { background: var(--rust); color: white; border-color: var(--rust); }
+
+  /* ── ZONE SWATCHES ── */
+  .zones { display: flex; gap: 6px; margin: 8px 0; }
+  .zone {
+    flex: 1;
+    padding: 6px 8px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .zone .z-num  { font-family: Georgia, serif; font-size: 1em; font-weight: 700; color: white; }
+  .zone .z-name { font-size: 0.58em; font-weight: 700; color: rgba(255,255,255,0.85); text-transform: uppercase; letter-spacing: 0.06em; }
+  .zone .z-desc { font-size: 0.56em; color: rgba(255,255,255,0.65); margin-top: 1px; }
+
+  /* ── FACT CALLOUTS ── */
+  .facts { display: flex; flex-direction: column; gap: 7px; }
+  .fact {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 12px;
+    background: var(--light);
+    border-radius: 4px;
+  }
+  .fact .f-num   { font-family: Georgia, serif; font-size: 1.4em; font-weight: 700; color: var(--rust); min-width: 44px; line-height: 1; }
+  .fact .f-label { font-size: 0.76em; font-weight: 600; color: var(--navy); }
+  .fact .f-desc  { font-size: 0.65em; color: var(--gray); }
+
+  /* ── TABLES ── */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 0.6em; margin-bottom: 6px; }
+  .tbl th { background: var(--navy); color: white; padding: 4px 8px; text-align: left; font-weight: 600; font-size: 0.9em; }
+  .tbl td { padding: 3px 8px; border-bottom: 1px solid var(--lgray); color: #444; }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl tr:nth-child(even) td { background: var(--light); }
+  .tbl code { background: #EDEDED; padding: 1px 3px; border-radius: 3px; font-size: 0.9em; color: var(--rust); }
+  .tbl .val { color: var(--navy); font-weight: 600; }
+
+  /* ── FLOW ── */
+  .flow { display: flex; align-items: center; gap: 6px; margin: 8px 0; }
+  .flow-box {
+    flex: 1;
+    padding: 6px 10px;
+    background: var(--light);
+    border-radius: 4px;
+    text-align: center;
+  }
+  .flow-box .f-label { font-size: 0.66em; font-weight: 600; color: var(--navy); }
+  .flow-box .f-sub   { font-size: 0.58em; color: var(--gray); margin-top: 1px; }
+  .flow-arrow { font-size: 1.1em; color: var(--rust); }
 
   /* ── CONTENTS SLIDE ── */
-  .contents-list { margin-top: 24px; }
+  .contents-list { margin-top: 18px; }
   .contents-item {
     display: flex;
     align-items: baseline;
-    gap: 24px;
-    padding: 16px 0;
+    gap: 20px;
+    padding: 12px 0;
     border-bottom: 1px solid var(--lgray);
   }
   .contents-item:first-child { border-top: 1px solid var(--lgray); }
   .contents-num {
     font-family: Georgia, serif;
-    font-size: 1.6em;
+    font-size: 1.5em;
     font-weight: 700;
     color: var(--rust);
-    min-width: 48px;
+    min-width: 44px;
     line-height: 1;
   }
   .contents-title {
-    font-size: 0.88em;
+    font-size: 0.84em;
     color: var(--navy);
     font-weight: 600;
   }
   .contents-desc {
-    font-size: 0.75em;
+    font-size: 0.7em;
     color: var(--gray);
     margin-top: 2px;
   }
@@ -349,7 +432,7 @@ style: |
   <div class="title-meta">
     <div class="left">
       <div class="assignment">Final Assignment</div>
-      <div style="color:rgba(247,248,250,0.35); font-size:0.85em">IAAC &nbsp;·&nbsp; 1<sup>st</sup>aac</div>
+      <div style="color:rgba(247,248,250,0.35); font-size:0.85em">IAAC &nbsp;·&nbsp; MaCAD 2025/26</div>
     </div>
     <div class="right">
       Lakzhmy Zaro<br>
@@ -362,7 +445,7 @@ style: |
 
 ---
 
-<div class="sidebar"><span class="seminar">Graph Machine Learning</span><span class="assignment">Final Assignment</span></div>
+<div class="sidebar"><span class="seminar">Digital tools for<br>Graph Machine Learning</span><span class="assignment">Final Assignment - G02</span></div>
 <div class="inner">
   <h1 style="color:var(--rust); font-size:1.6em; margin-bottom:4px">Contents</h1>
   <p style="font-size:0.72em; color:var(--gray); margin-bottom:0">This week we explored…</p>
@@ -372,7 +455,7 @@ style: |
       <div class="contents-num">01</div>
       <div>
         <div class="contents-title">Dataset</div>
-        <div class="contents-desc">Modified Swiss Dwellings — 5,372 floor plans as NetworkX graphs</div>
+        <div class="contents-desc">Modified Swiss Dwellings — 5,372 residential floor plans as NetworkX graphs · Plan 10000 selected</div>
       </div>
     </div>
     <div class="contents-item">
@@ -401,19 +484,24 @@ style: |
 
 ---
 
-<div class="sidebar"><span class="seminar">Graph Machine Learning</span><span class="assignment">Final Assignment</span></div>
+<div class="sidebar"><span class="seminar">Digital tools for<br>Graph Machine Learning</span><span class="assignment">Final Assignment - G02</span></div>
 <div class="inner">
-  <div class="section-num">01</div>
-  <div class="section-sub">Dataset</div>
+  <div class="sec-hdr"><div class="section-num">01</div><div class="section-sub">Dataset</div></div>
   <h1>Modified Swiss Dwellings</h1>
   <hr>
 
-  <p>5,372 Swiss residential floor plans, each stored as a NetworkX graph in <code>.pickle</code> format. Three modalities exist — image, geometry, and graph — but we work exclusively with the <strong>graph modality</strong>. The pickle file has no visual on its own; the floor plans below were rendered by reading the polygon geometry stored on each graph node and drawing them with matplotlib.</p>
-
-  <div class="img-frame" style="height:190px; margin: 12px 0 8px; border-radius:4px;">
-    <img src="img/samples.png" style="object-fit:cover; object-position:center;">
+  <div class="chips">
+    <span class="chip rust">5,372 floor plans</span>
+    <span class="chip">Multi-apartment clusters</span>
+    <span class="chip">Corridor buildings</span>
+    <span class="chip">Single units</span>
+    <span class="chip">Graph modality only</span>
   </div>
-  <div class="img-cap" style="margin-bottom:10px">Plans 10000, 10009, 10014, 10019, 10029, 10031 — rendered from graph_out node geometry</div>
+
+  <div class="img-frame" style="height:200px; margin:6px 0; border-radius:4px;">
+    <img src="img/samples.png" style="width:100%; height:100%; object-fit:cover; object-position:center;">
+  </div>
+  <div class="img-cap" style="margin-bottom:6px">6 sample plans — wide variety of residential typologies, scales and orientations</div>
 
   <div class="stats">
     <div class="stat"><div class="num">5,372</div><div class="lbl">Floor Plans</div></div>
@@ -421,19 +509,55 @@ style: |
     <div class="stat"><div class="num">9</div><div class="lbl">Room Types</div></div>
     <div class="stat"><div class="num">.pickle</div><div class="lbl">Graph Format</div></div>
   </div>
-
 </div>
 
 ---
 
-<div class="sidebar"><span class="seminar">Graph Machine Learning</span><span class="assignment">Final Assignment</span></div>
+<div class="sidebar"><span class="seminar">Digital tools for<br>Graph Machine Learning</span><span class="assignment">Final Assignment - G02</span></div>
 <div class="inner">
-  <div class="section-num">02</div>
-  <div class="section-sub">Research</div>
+  <div class="sec-hdr"><div class="section-num">01</div><div class="section-sub">Dataset — Selected Plan</div></div>
+  <h1>Plan 10000 — Multi-Apartment Cluster</h1>
+  <hr>
+
+  <div class="cols" style="flex:1; min-height:0;">
+    <div class="col" style="flex:1.4; display:flex; flex-direction:column; gap:6px; min-height:0;">
+      <div class="img-frame" style="flex:1; min-height:0;">
+        <img src="img/plan_rooms.png">
+      </div>
+      <div class="img-cap">Room types — rendered from graph_out geometry</div>
+    </div>
+    <div class="col" style="flex:0.6; display:flex; flex-direction:column; gap:8px; justify-content:center;">
+      <div class="facts">
+        <div class="fact">
+          <div class="f-num">41</div>
+          <div><div class="f-label">Rooms</div><div class="f-desc">across 2 apartments</div></div>
+        </div>
+        <div class="fact">
+          <div class="f-num">2</div>
+          <div><div class="f-label">Apartments</div><div class="f-desc">sharing a common entrance</div></div>
+        </div>
+        <div class="fact">
+          <div class="f-num">✓</div>
+          <div><div class="f-label">Ground Truth</div><div class="f-desc">validate predictions against MSD labels</div></div>
+        </div>
+      </div>
+      <div class="chips" style="margin-top:4px">
+        <span class="chip">Cluster typology</span>
+        <span class="chip">Diagonal layout</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+---
+
+<div class="sidebar"><span class="seminar">Digital tools for<br>Graph Machine Learning</span><span class="assignment">Final Assignment - G02</span></div>
+<div class="inner">
+  <div class="sec-hdr"><div class="section-num">02</div><div class="section-sub">Research</div></div>
   <h1>Literature</h1>
   <hr>
 
-  <div class="cols">
+  <div class="cols" style="flex:1; min-height:0;">
     <div class="col">
       <div class="card">
         <div class="tag">Paper 1</div>
@@ -442,7 +566,7 @@ style: |
         <ul>
           <li>5,372 Swiss residential floor plans</li>
           <li>3 modalities: image, geometry, graph</li>
-          <li>Richer than RPLAN & LIFULL — multi-apartment, compass orientation, inter-unit links</li>
+          <li>Richer than RPLAN &amp; LIFULL — multi-apartment, compass orientation, inter-unit links</li>
           <li>Graph encodes spatial zones, not room types</li>
         </ul>
         <div class="note">This dataset is our primary data source.</div>
@@ -463,46 +587,88 @@ style: |
       </div>
     </div>
   </div>
-
 </div>
 
 ---
 
-<div class="sidebar"><span class="seminar">Graph Machine Learning</span><span class="assignment">Final Assignment</span></div>
+<div class="sidebar"><span class="seminar">Digital tools for<br>Graph Machine Learning</span><span class="assignment">Final Assignment - G02</span></div>
 <div class="inner">
-  <div class="section-num">03</div>
-  <div class="section-sub">Graph Structure</div>
+  <div class="sec-hdr"><div class="section-num">03</div><div class="section-sub">Graph Structure</div></div>
+  <h1>Data Structure</h1>
+  <hr>
+
+  <div class="cols" style="gap:24px; margin-top:2px;">
+    <div class="col">
+      <div style="font-size:0.58em; font-weight:700; color:var(--rust); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px">graph_in — model input</div>
+      <table class="tbl">
+        <tr><th>Attribute</th><th>Type</th><th>Values</th></tr>
+        <tr><td><code>zoning_type</code></td><td>int</td><td class="val">0 · 1 · 2 · 3</td></tr>
+        <tr><td><code>connectivity</code></td><td>str</td><td class="val">'door' · 'entrance'</td></tr>
+      </table>
+      <div style="font-size:0.58em; font-weight:700; color:var(--navy); text-transform:uppercase; letter-spacing:0.1em; margin:8px 0 4px">graph_out — ground truth</div>
+      <table class="tbl">
+        <tr><th>Attribute</th><th>Type</th><th>Description</th></tr>
+        <tr><td><code>room_type</code></td><td>int</td><td class="val">0 – 8</td></tr>
+        <tr><td><code>geometry</code></td><td>Polygon</td><td>2D room outline</td></tr>
+        <tr><td><code>centroid</code></td><td>Point</td><td>centre of room</td></tr>
+      </table>
+    </div>
+    <div class="col">
+      <div style="font-size:0.58em; font-weight:700; color:var(--navy); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px">Room types (0 – 8)</div>
+      <table class="tbl">
+        <tr><th>ID</th><th>Room</th><th>ID</th><th>Room</th></tr>
+        <tr><td class="val">0</td><td>Balcony</td><td class="val">5</td><td>Kitchen</td></tr>
+        <tr><td class="val">1</td><td>Bathroom</td><td class="val">6</td><td>Living Room</td></tr>
+        <tr><td class="val">2</td><td>Bedroom</td><td class="val">7</td><td>Storeroom</td></tr>
+        <tr><td class="val">3</td><td>Corridor</td><td class="val">8</td><td>Other</td></tr>
+        <tr><td class="val">4</td><td>Dining</td><td></td><td></td></tr>
+      </table>
+      <div style="font-size:0.58em; font-weight:700; color:var(--navy); text-transform:uppercase; letter-spacing:0.1em; margin:8px 0 4px">Zone types (0 – 3)</div>
+      <table class="tbl">
+        <tr><th>ID</th><th>Zone</th><th>Typical rooms</th></tr>
+        <tr><td class="val">0</td><td>Living</td><td>Living room, dining</td></tr>
+        <tr><td class="val">1</td><td>Dynamic</td><td>Corridor, entrance</td></tr>
+        <tr><td class="val">2</td><td>Static</td><td>Bedroom, bathroom</td></tr>
+        <tr><td class="val">3</td><td>Functional</td><td>Kitchen, storeroom</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+---
+
+<div class="sidebar"><span class="seminar">Digital tools for<br>Graph Machine Learning</span><span class="assignment">Final Assignment - G02</span></div>
+<div class="inner">
+  <div class="sec-hdr"><div class="section-num">03</div><div class="section-sub">Graph Structure</div></div>
   <h1>From Plan to Graph — Plan 10000</h1>
   <hr>
 
-  <p>Each plan is stored as two paired graphs. <strong>graph_out</strong> (left) holds the ground-truth room type per node plus polygon geometry — this is what we rendered to visualise the plan. <strong>graph_in</strong> (right) holds only zone labels and connectivity — this is what the model actually sees. No shapes, no areas, no coordinates.</p>
+  <img src="img/plan_graph.png" style="width:100%; height:300px; object-fit:contain; object-position:center; display:block; margin-top:2px;">
+  <div class="img-cap" style="margin:4px 0 10px;">Plan 10000 — room types (left) and spatial connectivity graph (right)</div>
 
-  <div class="img-wrap" style="height:270px; margin-top:12px">
-    <div class="img-col">
-      <div class="img-frame"><img src="img/plan_rooms.png"></div>
-      <div class="img-cap"><strong>graph_out</strong> — room_type (0–8) + polygon geometry</div>
+  <div class="flow" style="margin-top:4px;">
+    <div class="flow-box" style="border-left:3px solid #7B61FF">
+      <div class="f-label">Zone label per node</div>
+      <div class="f-sub">graph_in input</div>
     </div>
-    <div class="img-col">
-      <div class="img-frame"><img src="img/plan_graph.png"></div>
-      <div class="img-cap"><strong>graph_in</strong> — zoning_type (0–3) · door / entrance edges</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="border-left:3px solid var(--rust)">
+      <div class="f-label">Graph topology</div>
+      <div class="f-sub">door / entrance edges</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="border-left:3px solid var(--navy)">
+      <div class="f-label">Room type prediction</div>
+      <div class="f-sub">GraphSAGE-Pool output</div>
     </div>
   </div>
-
-  <div class="attr-bar">
-    <div class="attr"><div class="k">Model input</div><div class="v rust">zoning_type 0–3</div></div>
-    <div class="attr"><div class="k">Edge type</div><div class="v">door · <span class="red">entrance</span></div></div>
-    <div class="attr"><div class="k">Model target</div><div class="v">room_type 0–8</div></div>
-    <div class="attr"><div class="k">Geometry used</div><div class="v" style="color:#AAAAAA">topology only</div></div>
-  </div>
-
 </div>
 
 ---
 
-<div class="sidebar"><span class="seminar">Graph Machine Learning</span><span class="assignment">Final Assignment</span></div>
+<div class="sidebar"><span class="seminar">Digital tools for<br>Graph Machine Learning</span><span class="assignment">Final Assignment - G02</span></div>
 <div class="inner">
-  <div class="section-num">04</div>
-  <div class="section-sub">Next Steps</div>
+  <div class="sec-hdr"><div class="section-num">04</div><div class="section-sub">Next Steps</div></div>
   <h1>Pipeline</h1>
   <hr>
 
@@ -536,5 +702,4 @@ style: |
       </div>
     </div>
   </div>
-
 </div>
