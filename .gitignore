@@ -23,6 +23,9 @@ notebooks/
 *.npy
 *.pickle
 
+# Presentation (work in progress)
+slides.md
+
 # Model weights
 *.pth
 *.pt
