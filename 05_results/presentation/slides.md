@@ -455,7 +455,7 @@ style: |
       <div class="contents-num">01</div>
       <div>
         <div class="contents-title">Dataset</div>
-        <div class="contents-desc">Modified Swiss Dwellings — 5,372 residential floor plans as NetworkX graphs · Plan 10000 selected</div>
+        <div class="contents-desc">Modified Swiss Dwellings — 5,372 residential floor plans as graphs · Plan 10000 selected</div>
       </div>
     </div>
     <div class="contents-item">
@@ -690,7 +690,7 @@ style: |
     <div class="step">
       <div class="n">03</div>
       <div>
-        <div class="t">Graph Analysis — NetworkX</div>
+        <div class="t">Graph Analysis</div>
         <div class="d">Compute degree, betweenness, and closeness centrality. Analyse spatial connectivity patterns across the floor plan.</div>
       </div>
     </div>
