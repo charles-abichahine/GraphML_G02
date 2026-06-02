@@ -515,8 +515,8 @@ style: |
 
 <div class="sidebar"><span class="seminar">Digital tools for<br>Graph Machine Learning</span><span class="assignment">Final Assignment - G02</span></div>
 <div class="inner">
-  <div class="sec-hdr"><div class="section-num">01</div><div class="section-sub">Dataset — Selected Plan</div></div>
-  <h1>Plan 10000 — Multi-Apartment Cluster</h1>
+  <div class="sec-hdr"><div class="section-num">01</div><div class="section-sub">Dataset — Reference Plan</div></div>
+  <h1>Plan 10000 — Dataset Reference</h1>
   <hr>
 
   <div class="cols" style="flex:1; min-height:0; margin-top:4px; gap:10px; align-items:stretch;">
@@ -524,7 +524,7 @@ style: |
       <div style="flex:1; min-height:0; display:flex; align-items:center; justify-content:center;">
         <img src="img/plan_rooms.png" style="width:100%; height:100%; object-fit:contain; display:block;">
       </div>
-      <div class="img-cap">Room types — rendered from graph_out geometry</div>
+      <div class="img-cap">Plan 10000 — used to understand the dataset structure and typology</div>
     </div>
     <div class="col" style="flex:1; display:flex; flex-direction:column; gap:8px; justify-content:center; padding-left:16px;">
       <div class="facts">
@@ -537,13 +537,13 @@ style: |
           <div><div class="f-label">Apartments</div><div class="f-desc">sharing a common entrance</div></div>
         </div>
         <div class="fact">
-          <div class="f-num">✓</div>
-          <div><div class="f-label">Ground Truth</div><div class="f-desc">validate predictions against MSD labels</div></div>
+          <div class="f-num">→</div>
+          <div><div class="f-label">Our Plan</div><div class="f-desc">we will design our own residential floor plan in Rhino</div></div>
         </div>
       </div>
       <div class="chips" style="margin-top:4px">
         <span class="chip">Cluster typology</span>
-        <span class="chip">Diagonal layout</span>
+        <span class="chip">Residential</span>
       </div>
     </div>
   </div>
@@ -676,8 +676,8 @@ style: |
     <div class="step">
       <div class="n">01</div>
       <div>
-        <div class="t">Floor Plan Recreation</div>
-        <div class="d">Recreate plan 10000 in Rhino. Room boundaries as closed polylines with shared edges between adjacent rooms — required for TopologicPy to detect adjacency.</div>
+        <div class="t">Floor Plan Design</div>
+        <div class="d">Design our own residential floor plan in Rhino. Room boundaries as closed polylines with shared edges between adjacent rooms — required for TopologicPy to detect adjacency.</div>
       </div>
     </div>
     <div class="step">
@@ -690,8 +690,8 @@ style: |
     <div class="step">
       <div class="n">03</div>
       <div>
-        <div class="t">Graph Analysis</div>
-        <div class="d">Compute degree, betweenness, and closeness centrality. Analyse spatial connectivity patterns across the floor plan.</div>
+        <div class="t">Graph Analysis — TopologicPy</div>
+        <div class="d">Compute degree, betweenness, and closeness centrality using TopologicPy. Analyse spatial connectivity patterns across the floor plan.</div>
       </div>
     </div>
     <div class="step">
