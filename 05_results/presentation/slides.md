@@ -270,7 +270,7 @@ style: |
   .img-wrap { display: flex; gap: 14px; }
   .img-col  { flex: 1; display: flex; flex-direction: column; gap: 4px; }
   .img-frame {
-    background: var(--light);
+    background: white;
     border-radius: 4px;
     overflow: hidden;
     flex: 1;
@@ -374,7 +374,7 @@ style: |
   .tbl { width: 100%; border-collapse: collapse; font-size: 0.6em; margin-bottom: 6px; }
   .tbl th { background: var(--navy); color: white; padding: 4px 8px; text-align: left; font-weight: 600; font-size: 0.9em; }
   .tbl td { padding: 3px 8px; border-bottom: 1px solid var(--lgray); color: #444; }
-  .tbl tr:last-child td { border-bottom: none; }
+  .tbl tr:last-child td { border-bottom: 1px solid var(--lgray); }
   .tbl tr:nth-child(even) td { background: var(--light); }
   .tbl code { background: #EDEDED; padding: 1px 3px; border-radius: 3px; font-size: 0.9em; color: var(--rust); }
   .tbl .val { color: var(--navy); font-weight: 600; }
@@ -448,7 +448,7 @@ style: |
 <div class="sidebar"><span class="seminar">Digital tools for<br>Graph Machine Learning</span><span class="assignment">Final Assignment - G02</span></div>
 <div class="inner">
   <h1 style="color:var(--rust); font-size:1.6em; margin-bottom:4px">Contents</h1>
-  <p style="font-size:0.72em; color:var(--gray); margin-bottom:0">This week we explored…</p>
+  <p style="font-size:0.72em; color:var(--gray); margin-bottom:0">This week we explored the Swiss Dwellings dataset and the research papers behind it, and defined the next steps for our graph ML pipeline.</p>
 
   <div class="contents-list">
     <div class="contents-item">
@@ -498,10 +498,10 @@ style: |
     <span class="chip">Graph modality only</span>
   </div>
 
-  <div class="img-frame" style="height:200px; margin:6px 0; border-radius:4px;">
-    <img src="img/samples.png" style="width:100%; height:100%; object-fit:cover; object-position:center;">
+  <div class="img-frame" style="height:200px; margin:6px 0; border-radius:4px; background:white;">
+    <img src="img/samples2.png" style="width:100%; height:100%; object-fit:contain; object-position:center;">
   </div>
-  <div class="img-cap" style="margin-bottom:6px">6 sample plans — wide variety of residential typologies, scales and orientations</div>
+  <div class="img-cap" style="margin-bottom:6px">3 sample plans — wide variety of residential typologies, scales and orientations</div>
 
   <div class="stats">
     <div class="stat"><div class="num">5,372</div><div class="lbl">Floor Plans</div></div>
@@ -519,14 +519,14 @@ style: |
   <h1>Plan 10000 — Multi-Apartment Cluster</h1>
   <hr>
 
-  <div class="cols" style="flex:1; min-height:0;">
-    <div class="col" style="flex:1.4; display:flex; flex-direction:column; gap:6px; min-height:0;">
-      <div class="img-frame" style="flex:1; min-height:0;">
-        <img src="img/plan_rooms.png">
+  <div class="cols" style="flex:1; min-height:0; margin-top:4px; gap:10px; align-items:stretch;">
+    <div class="col" style="flex:3; display:flex; flex-direction:column; gap:6px; min-height:0;">
+      <div style="flex:1; min-height:0; display:flex; align-items:center; justify-content:center;">
+        <img src="img/plan_rooms.png" style="width:100%; height:100%; object-fit:contain; display:block;">
       </div>
       <div class="img-cap">Room types — rendered from graph_out geometry</div>
     </div>
-    <div class="col" style="flex:0.6; display:flex; flex-direction:column; gap:8px; justify-content:center;">
+    <div class="col" style="flex:1; display:flex; flex-direction:column; gap:8px; justify-content:center; padding-left:16px;">
       <div class="facts">
         <div class="fact">
           <div class="f-num">41</div>
