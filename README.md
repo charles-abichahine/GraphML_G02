@@ -13,11 +13,10 @@ Graph-based analysis and learning pipeline for architectural floor plans, using 
 
 ## Structure
 ```
-01_dataset/              MSD dataset + recreated floor plan (floor_plan/)
-02_graph_construction/   TopologicPy graph from recreated floor plan
-03_graph_analysis/       centrality metrics and spatial analysis
-04_node_classification/  node classification using pretrained model (S06)
-05_results/              final figures and discussion
+01_dataset/                      MSD dataset + our own floor plan (floor_plan/)
+02_graph_construction_analysis/  TopologicPy graph construction + centrality analysis
+03_node_classification/          node classification using pretrained model (S06)
+04_results/                      final figures and discussion
 notebooks/               reference notebooks
 references/              research papers and links
 ```

@@ -86,25 +86,23 @@ The pretrained weights are in the faculty notebook `S06-15 GML Node Classificati
 ## Pipeline — What Each Step Does
 
 ### Step 1 — Floor Plan Design `01_dataset/floor_plan/`
-Design our own residential floor plan in Rhino.
+Design our own residential floor plan in Rhino, from scratch.
 
-- Use plan 10000 as a reference for typology and scale — the DXF is in `01_dataset/floor_plan/plan_10000.dxf`
 - Rooms must be closed polylines, adjacent rooms must share the exact same edge (no gaps, no overlaps)
 - The floor plan must be residential — confirmed by faculty
 
-### Step 2 — Graph Construction `02_graph_construction/`
-Convert the Rhino floor plan into a graph using TopologicPy.
+### Step 2 — Graph Construction & Analysis `02_graph_construction_analysis/`
+Convert the Rhino floor plan into a graph, then analyse its structure — both with TopologicPy.
+(The reference notebook covers construction and analysis together, so we're treating this as one combined step rather than splitting it across two folders.)
 
+**Construction**
 TopologicPy reads the geometry and automatically detects which rooms share walls.
 Each shared wall with an opening becomes an edge. You then need to manually assign:
-- `zoning_type` (0–3) to each node — based on the original MSD labels from plan 10000
+- `zoning_type` (0–3) to each node — based on the spatial role of each room (Living / Dynamic / Static / Functional)
 - `connectivity` (door/entrance) to each edge — based on opening type
 
-Reference notebook: `S03-07 Spatial Intelligence Part 1.ipynb`
-
-### Step 3 — Graph Analysis `03_graph_analysis/`
+**Analysis**
 Once the graph is built, analyse its structure using TopologicPy:
-
 - **Degree centrality** — how many rooms each room connects to
 - **Betweenness centrality** — which rooms act as bridges between parts of the plan
 - **Closeness centrality** — how easily each room is reached from the rest
@@ -112,11 +110,14 @@ Once the graph is built, analyse its structure using TopologicPy:
 This step is about understanding the spatial logic of the floor plan as a network,
 not about machine learning.
 
-### Step 4 — Node Classification `04_node_classification/`
+Reference notebook: `S03-07 Spatial Intelligence Part 1.ipynb`
+
+### Step 3 — Node Classification `03_node_classification/`
 Load the pretrained GraphSAGE-Pool model and run it on the graph from Step 2.
 
 The model takes `zoning_type` and connectivity as input and outputs a predicted `room_type`
-for each node. Compare the predictions to the original MSD ground truth for plan 10000.
+for each node. Compare the predictions to the room types we actually designed for our own
+floor plan, to see how well a model trained on the MSD dataset generalises to a new plan.
 
 Reference notebook: `S06-15 GML Node Classification.ipynb`
 
@@ -127,9 +128,9 @@ Reference notebook: `S06-15 GML Node Classification.ipynb`
 - [x] Repo structure set up, environment configured (`environment.yml`)
 - [x] MSD dataset downloaded locally (gitignored, not committed)
 - [x] Dataset exploration notebook (`explore_dataset.ipynb`) — browse any plan, view room types and graph overlay
-- [x] DXF export notebook (`export_to_rhino.ipynb`) — exports plan 10000 to Rhino for reference
-- [x] Plan 10000 DXF exported and opened in Rhino as reference
-- [x] Presentation (`05_results/presentation/slides.md`)
+- [x] DXF export notebook (`export_to_rhino.ipynb`) — exports any MSD plan to DXF for inspection in Rhino
+- [x] Sample plan (10000) exported to DXF and opened in Rhino to study the dataset's structure
+- [x] Presentation (`04_results/presentation/slides.md`)
 
 ## What is Still To Do
 
@@ -138,6 +139,6 @@ Reference notebook: `S06-15 GML Node Classification.ipynb`
 - [ ] Assign zone labels (zoning_type 0–3) and edge connectivity types (door/entrance)
 - [ ] Graph analysis — degree, betweenness, closeness centrality using TopologicPy
 - [ ] Run pretrained GraphSAGE-Pool model for node classification
-- [ ] Document results in `05_results/`
+- [ ] Document results in `04_results/`
 
 
