@@ -50,12 +50,13 @@ Label nodes with `zoning_type` and edges with connectivity, export graph CSVs (`
 - [x] MSD dataset downloaded locally (gitignored)
 - [x] Dataset exploration (`notebooks/01.1`) and DXF export (`notebooks/01.2`) notebooks
 - [x] Narkomfin floor plans modelled in Rhino, exported as OBJ, converted to face BREP
-- [x] Presentation (`04_presentation/slides.md`)
+- [x] Narkomfin simplified 3D model built in Rhino
+- [x] Zone labels (`zoning_type` 0–3) and connectivity types assigned to Narkomfin graphs
+- [x] Pretrained GraphSAGE-Pool model run for node classification (`notebooks/03.x`)
+- [x] Presentation (slides.pdf)
 
 ## What is Still To Do
 
-- [ ] Graph analysis — closeness centrality, betweenness centrality, shortest path for both plans
-- [ ] Assign zone labels (`zoning_type` 0–3) and connectivity types to Narkomfin graphs
-- [ ] Run pretrained GraphSAGE-Pool model for node classification
-- [ ] Document and interpret results
-- [ ] Finalise presentation
+- [ ] Graph analysis — closeness centrality, betweenness centrality, shortest path
+- [ ] Export prediction plots
+- [ ] Final presentation review once all images are in place
