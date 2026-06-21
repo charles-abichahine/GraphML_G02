@@ -19,6 +19,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 HERE   = Path(__file__).parent
 IMG    = HERE / 'img'
 PNGS   = IMG / 'pngs'
+PRED   = IMG / 'prediction'
 OUTPUT = HERE / 'slides.pdf'
 
 # ── PAGE ───────────────────────────────────────────────────────────────────────
@@ -856,81 +857,163 @@ def slide_06(c, n, total):
 def slide_pipeline(c, n, total):
     fill_bg(c)
     draw_label(c, 'P r o c e s s')
-    y_after = draw_headline(c, 'From floor plan to prediction.')
+    y_after = draw_headline(c, 'One building, two paths, one read.')
     y_line  = draw_accent_line(c, y_after)
 
-    stages = [
-        (ACCENT_PURPLE, '01', 'Geometry',
-         'The Narkomfin, redrawn in Rhino, becomes analysable solids.',
-         [('02.1  OBJ to BREP',
-           'Convert the exported mesh into watertight face BREPs, one solid per room.')]),
-        (ACCENT_TEAL, '02', 'Spatial Analysis',
-         'Measure how each room sits within the circulation network.',
-         [('02.2 – 02.4  Graph analysis',
-           'Closeness, betweenness and shortest-path metrics across both unit types.')]),
-        (ACCENT_GREEN, '03', 'Graph Preparation',
-         'Encode the building as a labelled input graph.',
-         [('03.0  Rhino to cell complex',
-           'Build a Topologic cell complex from the BREPs.'),
-          ('03.1  Prepare graph',
-           'Label nodes with zoning_type, edges with door / entrance connectivity.')]),
-        (ACCENT_YELLOW, '04', 'Prediction',
-         'Infer room types from zoning and topology alone.',
-         [('03.2  Predict',
-           'Run the pretrained GraphSAGE-Pool model and flag misclassified nodes.')]),
-    ]
-    n_s     = len(stages)
-    arrow_w = 46
-    card_w  = (CONTENT_W - (n_s - 1) * arrow_w) // n_s
-    card_h   = 400
-    top_lim  = y_line - 16
-    bot_lim  = Y_BAR + 60
-    card_top = top_lim - max(0, (top_lim - bot_lim - card_h)) / 2
-    card_bot = card_top - card_h
+    # ── Geometry: two lanes that branch from a decision and merge to a conclusion
+    BW   = 196   # building / conclusion bookend width
+    GW   = 320   # geometry card width
+    S1W  = 432   # stage-1 width (spatial analysis / graph preparation)
+    S2W  = 330   # stage-2 width (prediction)
+    fork = 38
 
-    for i, (accent, num, title, desc, books) in enumerate(stages):
-        cx0 = PAD + i * (card_w + arrow_w)
-        # Card + accent top bar
+    bld_x   = PAD
+    geom_x  = bld_x + BW + fork + 38
+    s1_x    = geom_x + GW + 44
+    s2_x    = s1_x + S1W + 44
+    concl_x = W - PAD - BW
+
+    top_lim = y_line - 24
+    bot_lim = Y_BAR + 64
+    row_gap = 56
+    card_h  = (top_lim - bot_lim - row_gap) // 2
+    row1_top = top_lim
+    row1_bot = row1_top - card_h
+    row2_bot = row1_bot - row_gap - card_h
+    full_top = row1_top
+    full_bot = row2_bot
+    row1_cy  = row1_bot + card_h / 2
+    row2_cy  = row2_bot + card_h / 2
+    mid_cy   = (row1_cy + row2_cy) / 2
+
+    # ── drawing helpers ─────────────────────────────────────────────────────────
+    def _box(x, w, y_bot, h, accent):
         c.setFillColor(XDGREY)
-        c.rect(cx0, card_bot, card_w, card_h, fill=1, stroke=0)
+        c.rect(x, y_bot, w, h, fill=1, stroke=0)
         c.setFillColor(accent)
-        c.rect(cx0, card_top - 6, card_w, 6, fill=1, stroke=0)
+        c.rect(x, y_bot + h - 6, w, 6, fill=1, stroke=0)
 
-        # Big stage number
-        c.setFont(FONT_B, 50)
+    def end_box(x, accent, eyebrow, title_lines, sub):
+        h = full_top - full_bot
+        _box(x, BW, full_bot, h, accent)
+        cxc = x + BW / 2
+        c.setFont(FONT_B, 12)
         c.setFillColor(accent)
-        c.drawString(cx0 + 30, card_top - 80, num)
-        # Title
-        c.setFont(FONT_B, 28)
+        c.drawCentredString(cxc, full_top - 38, eyebrow)
+        ty = (full_bot + full_top) / 2 + len(title_lines) * 18 - 4
+        c.setFont(FONT_B, 30)
         c.setFillColor(WHITE)
-        c.drawString(cx0 + 30, card_top - 124, title)
-        # Stage description
-        wrap_and_draw(c, desc, cx0 + 30, card_top - 156, card_w - 60,
-                      FONT, 18, GREY, spacing=1.35)
+        for ln in title_lines:
+            c.drawCentredString(cxc, ty, ln)
+            ty -= 36
+        c.setFont(FONT, 16)
+        c.setFillColor(GREY)
+        c.drawCentredString(cxc, ty - 2, sub)
 
-        # Thin divider before notebook entries
-        ey = card_top - 206
-        c.setFillColor(Color(1, 1, 1, alpha=0.10))
-        c.rect(cx0 + 30, ey + 26, card_w - 60, 1, fill=1, stroke=0)
+    def geom_card(x, y_bot, name, sub):
+        _box(x, GW, y_bot, card_h, ACCENT_PURPLE)
+        top = y_bot + card_h
+        c.setFont(FONT_B, 13)
+        c.setFillColor(ACCENT_PURPLE)
+        c.drawString(x + 26, top - 42, 'GEOMETRY')
+        c.setFont(FONT_B, 32)
+        c.setFillColor(WHITE)
+        c.drawString(x + 26, y_bot + card_h / 2 - 2, name)
+        c.setFont(FONT, 18)
+        c.setFillColor(GREY)
+        c.drawString(x + 26, y_bot + card_h / 2 - 32, sub)
 
-        # Notebook entries — id + what it does
+    def stage_card(x, w, y_bot, accent, title, desc, books):
+        _box(x, w, y_bot, card_h, accent)
+        top = y_bot + card_h
+        c.setFont(FONT_B, 30)
+        c.setFillColor(WHITE)
+        c.drawString(x + 26, top - 50, title)
+        wrap_and_draw(c, desc, x + 26, top - 84, w - 52,
+                      FONT, 18, GREY, spacing=1.3)
+        ey = top - 132
         for bid, bdesc in books:
             c.setFillColor(accent)
-            c.circle(cx0 + 36, ey + 6, 4, fill=1, stroke=0)
-            c.setFont(FONT_B, 16)
+            c.circle(x + 32, ey + 7, 4, fill=1, stroke=0)
+            c.setFont(FONT_B, 17)
             c.setFillColor(LGREY)
-            c.drawString(cx0 + 50, ey, bid)
-            yy = wrap_and_draw(c, bdesc, cx0 + 50, ey - 22, card_w - 80,
-                               FONT, 14, GREY, spacing=1.3)
+            c.drawString(x + 46, ey, bid)
+            yy = wrap_and_draw(c, bdesc, x + 46, ey - 22, w - 72,
+                               FONT, 15, GREY, spacing=1.25)
             ey = yy - 16
 
-        # Arrow to next stage
-        if i < n_s - 1:
-            ax = cx0 + card_w + arrow_w / 2
-            ay = card_bot + card_h / 2
-            c.setFont(FONT_B, 42)
-            c.setFillColor(DGREY)
-            c.drawCentredString(ax, ay - 14, '→')
+    def arrowhead(x, y):
+        s = 9
+        c.setFillColor(DGREY)
+        p = c.beginPath()
+        p.moveTo(x, y)
+        p.lineTo(x - s, y + s * 0.6)
+        p.lineTo(x - s, y - s * 0.6)
+        p.close()
+        c.drawPath(p, fill=1, stroke=0)
+
+    def hline(x1, x2, y):
+        c.setStrokeColor(DGREY)
+        c.setLineWidth(2)
+        c.line(x1, y, x2 - 8, y)
+        arrowhead(x2, y)
+
+    def vline(x, y1, y2):
+        c.setStrokeColor(DGREY)
+        c.setLineWidth(2)
+        c.line(x, y1, x, y2)
+
+    # ── Bookends ────────────────────────────────────────────────────────────────
+    end_box(bld_x, WHITE, 'DECISION', ['The', 'Narkomfin'], 'our case study')
+    end_box(concl_x, WHITE, 'OUTCOME', ['Conclusion'], 'what the graph knows')
+
+    # ── Top lane: Floor Plan → Spatial Analysis ─────────────────────────────────
+    geom_card(geom_x, row1_bot, 'Floor Plan', '2D plan, redrawn')
+    stage_card(s1_x, S1W, row1_bot, ACCENT_TEAL,
+               'Spatial Analysis',
+               'How each room sits within the circulation network.',
+               [('02.1  OBJ to BREP',
+                 'Build clean face BREPs from the plan geometry.'),
+                ('02.2 – 02.4  Graph analysis',
+                 'Closeness, betweenness and shortest-path metrics.')])
+
+    # ── Bottom lane: Simplified 3D → Graph Preparation → Prediction ─────────────
+    geom_card(geom_x, row2_bot, 'Simplified 3D', 'rooms as volumes')
+    stage_card(s1_x, S1W, row2_bot, ACCENT_GREEN,
+               'Graph Preparation',
+               'Encode the 3D model as a labelled input graph.',
+               [('03.0  Rhino to cell complex',
+                 'Build a Topologic cell complex.'),
+                ('03.1  Prepare graph',
+                 'Label nodes with zones, edges with connectivity.')])
+    stage_card(s2_x, S2W, row2_bot, ACCENT_YELLOW,
+               'Prediction',
+               'Infer room types from zoning and topology.',
+               [('03.2  Predict',
+                 'Run the pretrained GraphSAGE-Pool model.')])
+
+    # ── Fork: decision → two geometries ─────────────────────────────────────────
+    fbus = bld_x + BW + fork
+    c.setStrokeColor(DGREY)
+    c.setLineWidth(2)
+    c.line(bld_x + BW, mid_cy, fbus, mid_cy)
+    vline(fbus, row1_cy, row2_cy)
+    hline(fbus, geom_x, row1_cy)
+    hline(fbus, geom_x, row2_cy)
+
+    # ── In-lane arrows ──────────────────────────────────────────────────────────
+    hline(geom_x + GW, s1_x, row1_cy)   # floor plan → spatial analysis
+    hline(geom_x + GW, s1_x, row2_cy)   # simplified 3d → graph preparation
+    hline(s1_x + S1W, s2_x, row2_cy)    # graph preparation → prediction
+
+    # ── Merge: two paths → conclusion ───────────────────────────────────────────
+    mbus = concl_x - fork
+    c.setStrokeColor(DGREY)
+    c.setLineWidth(2)
+    c.line(s1_x + S1W, row1_cy, mbus, row1_cy)   # top path runs to the merge bus
+    c.line(s2_x + S2W, row2_cy, mbus, row2_cy)   # bottom path runs to the merge bus
+    vline(mbus, row1_cy, row2_cy)
+    hline(mbus, concl_x, mid_cy)
 
     draw_bottom_bar(c, n, total)
 
@@ -1104,7 +1187,7 @@ def slide_12(c, n, total):
     _analysis_slide(c, n, total,
         section_lbl = 'E  ·  G r a p h  A n a l y s i s',
         headline    = 'Closeness centrality, Type K.',
-        img_path    = IMG / 'plan1-closeness-centrality.png',
+        img_path    = IMG / 'closeness-centrality.png',
         strip_fn    = draw_thermal_strip,
         strip_kw    = dict(label_l='high integration', label_r='low integration'),
         bullets     = [
@@ -1120,7 +1203,7 @@ def slide_13(c, n, total):
     _analysis_slide(c, n, total,
         section_lbl = 'E  ·  G r a p h  A n a l y s i s',
         headline    = 'Betweenness centrality, Type K.',
-        img_path    = IMG / 'plan1-betweenness-centrality.png',
+        img_path    = IMG / 'betweenness-centrality.png',
         strip_fn    = draw_thermal_strip,
         strip_kw    = dict(label_l='high traffic', label_r='low traffic'),
         bullets     = [
@@ -1155,7 +1238,7 @@ def slide_14(c, n, total):
     img_bot = Y_LEGEND + 56
 
     # Image drawn first (behind boxes)
-    draw_image(c, IMG / 'plan1-shortest-path.png', 0, img_bot, W, img_top - img_bot, scale_mode='fill_width')
+    draw_image(c, IMG / 'shortest-path.png', 0, img_bot, W, img_top - img_bot, scale_mode='fill_width')
 
     for i, txt in enumerate(bullets):
         bx = PAD + i * (b_w + b_gap)
@@ -1189,31 +1272,81 @@ def slide_14(c, n, total):
     draw_bottom_bar(c, n, total)
 
 
-def _prediction_slide(c, n, total, unit_type, img_name):
+def slide_degree(c, n, total):
+    _analysis_slide(c, n, total,
+        section_lbl = 'E  ·  G r a p h  A n a l y s i s',
+        headline    = 'Degree centrality, Type K.',
+        img_path    = IMG / 'degree-centrality.png',
+        strip_fn    = draw_thermal_strip,
+        strip_kw    = dict(label_l='high degree', label_r='low degree'),
+        bullets     = [
+            'Each node scored by its number of direct connections',
+            'Corridor and entrance hubs reach the most neighbours',
+            'Private cells connect to only one or two rooms',
+            'Degree reveals the building’s local connection hubs',
+        ],
+    )
+
+
+def slide_isovist(c, n, total):
+    _analysis_slide(c, n, total,
+        section_lbl = 'E  ·  G r a p h  A n a l y s i s',
+        headline    = 'Isovist / visibility graph, Type K.',
+        img_path    = IMG / 'isovist.png',
+        strip_fn    = draw_thermal_strip,
+        strip_kw    = dict(label_l='high visibility', label_r='low visibility'),
+        bullets     = [
+            'Edges link rooms with a direct line of sight',
+            'Open corridors and communal spaces see the most',
+            'Enclosed cells remain visually isolated',
+            'Isovist captures perceived spatial openness',
+        ],
+    )
+
+
+def _prediction_slide(c, n, total, unit_type, gt_name, pred_name):
     fill_bg(c)
     draw_label(c, 'F  ·  N o d e  C l a s s i f i c a t i o n')
     y_after = draw_headline(c, f'Room type prediction, {unit_type}.')
-    draw_accent_line(c, y_after)
+    y_line  = draw_accent_line(c, y_after)
 
-    img_bot = Y_LEGEND + 100
-    img_h   = Y_HEAD - 20 - img_bot
-    draw_image(c, PNGS / img_name, PAD, img_bot, CONTENT_W, img_h)
+    gap    = 60
+    half_w = (CONTENT_W - gap) // 2
+    left_x  = PAD
+    right_x = PAD + half_w + gap
 
-    c.setFont(FONT, 19)
+    lbl_y   = y_line - 26
+    img_top = lbl_y - 18
+    img_bot = Y_LEGEND + 108
+
+    # Column headers
+    c.setFont(FONT_B, 24)
+    c.setFillColor(WHITE)
+    c.drawCentredString(left_x + half_w / 2, lbl_y, 'Ground truth')
+    c.setFillColor(ACCENT_TEAL)
+    c.drawCentredString(right_x + half_w / 2, lbl_y, 'Prediction')
+
+    # Plans side by side
+    draw_image(c, PRED / gt_name,   left_x,  img_bot, half_w, img_top - img_bot)
+    draw_image(c, PRED / pred_name, right_x, img_bot, half_w, img_top - img_bot)
+
+    c.setFont(FONT, 18)
     c.setFillColor(DGREY)
-    c.drawCentredString(W // 2, img_bot - 22,
-        'Predicted room types  ·  red nodes = misclassified')
+    c.drawCentredString(W // 2, img_bot - 26,
+        'Rooms coloured by type  ·  red = misclassified')
 
     draw_legend_strip(c)
     draw_bottom_bar(c, n, total)
 
 
 def slide_15(c, n, total):
-    _prediction_slide(c, n, total, 'K-type', 'plot-prediction-k.png')
+    _prediction_slide(c, n, total, 'K-type',
+                      'type-k-ground-truth.png', 'type-k-prediction.png')
 
 
 def slide_16(c, n, total):
-    _prediction_slide(c, n, total, 'F-type', 'plot-prediction-f.png')
+    _prediction_slide(c, n, total, 'F-type',
+                      'type-f-ground-truth.png', 'type-f-prediction.png')
 
 
 def slide_17(c, n, total):
@@ -1273,8 +1406,8 @@ def main():
         slide_05, slide_06, slide_pipeline,
         slide_07, slide_08,
         slide_09, slide_10, slide_11, slide_12,
-        slide_13, slide_14, slide_15, slide_16,
-        slide_17,
+        slide_13, slide_degree, slide_14, slide_isovist,
+        slide_15, slide_16, slide_17,
     ]
     total = len(slides)
     cv    = canvas.Canvas(str(OUTPUT), pagesize=(W, H))
