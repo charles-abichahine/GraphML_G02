@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GraphML_G02 · Graph Learning Pipeline for Architectural Floor Plans</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* viridis palette — room types 0..8 */
+  --c0:#440154; --c1:#472d7b; --c2:#3b528b; --c3:#2c728e; --c4:#21908c;
+  --c5:#27ad81; --c6:#5ec962; --c7:#addc30; --c8:#fde725;
+  --teal:#21908c; --purple:#472d7b; --green:#5ec962; --yellow:#fde725; --blue:#0a84ff; --red:#ff453a;
+
+  --bg:#000000; --bg2:#0c0e12; --panel:#14161b; --panel2:#1a1d24;
+  --line:#262a32; --line2:#323742;
+  --white:#f3f5f8; --grey:#9aa1ac; --dgrey:#5b626d; --xdgrey:#3a3f49;
+
+  --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  --sans:'Inter','Segoe UI',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#000;overflow:hidden;font-family:var(--sans);-webkit-font-smoothing:antialiased}
+
+#deck{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+.stage{position:relative;width:1920px;height:1080px;transform:scale(var(--s,1));transform-origin:center center;flex:none}
+
+/* ── slide shell ── */
+.slide{
+  position:absolute;inset:0;background:var(--bg);overflow:hidden;
+  padding:72px 80px 64px;display:flex;flex-direction:column;
+  opacity:0;visibility:hidden;transform:translateY(14px) scale(.992);
+  transition:opacity .5s cubic-bezier(.4,0,.2,1),transform .5s cubic-bezier(.4,0,.2,1),visibility .5s;
+}
+.slide.active{opacity:1;visibility:visible;transform:none;z-index:2}
+.slide.prev{transform:translateY(-14px) scale(.992)}
+
+/* ── shared header ── */
+.eyebrow{font-size:21px;letter-spacing:.42em;text-transform:uppercase;color:var(--grey);font-weight:500;display:flex;align-items:center;gap:16px}
+.eyebrow .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 14px var(--teal)}
+h1.head{font-family:var(--serif);font-weight:600;color:var(--white);font-size:74px;line-height:1.04;letter-spacing:-.015em;margin-top:18px}
+.accent-line{height:3px;width:100%;background:linear-gradient(90deg,var(--teal),transparent 72%);margin-top:22px;border-radius:2px}
+.body{flex:1;min-height:0;display:flex;flex-direction:column;margin-top:34px}
+
+/* ── footer ── */
+.foot{position:absolute;left:80px;right:80px;bottom:30px;display:flex;justify-content:space-between;align-items:center;font-size:19px;color:var(--dgrey);font-family:var(--mono);letter-spacing:.04em}
+.foot .brand{display:flex;align-items:center;gap:10px}
+.foot .brand b{color:var(--grey);font-weight:500}
+
+/* ── progress + nav ── */
+#bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--green));z-index:50;transition:width .45s ease;box-shadow:0 0 12px rgba(33,144,140,.6)}
+#dots{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:50;padding:9px 14px;background:rgba(15,17,21,.6);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:30px}
+#dots button{width:8px;height:8px;border-radius:50%;border:none;background:var(--xdgrey);cursor:pointer;padding:0;transition:.25s}
+#dots button:hover{background:var(--grey);transform:scale(1.3)}
+#dots button.on{background:var(--teal);width:22px;border-radius:5px;box-shadow:0 0 10px var(--teal)}
+.navhint{position:fixed;bottom:20px;right:22px;z-index:50;font-family:var(--mono);font-size:13px;color:var(--dgrey);opacity:.7}
+
+/* ── reusable bits ── */
+.chips{display:flex;gap:11px;flex-wrap:wrap}
+.chip{padding:9px 20px;border-radius:30px;font-size:20px;font-weight:500;color:var(--grey);background:var(--panel)}
+.chip.on{background:linear-gradient(135deg,rgba(33,144,140,.22),rgba(33,144,140,.06));color:#7fe3dd;border-color:rgba(33,144,140,.5)}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.stat{background:linear-gradient(180deg,var(--panel),var(--bg2));border-radius:16px;padding:26px 28px;position:relative;overflow:hidden}
+.stat .n{font-family:var(--serif);font-weight:600;font-size:54px;color:var(--white);line-height:1}
+.stat .l{font-size:20px;color:var(--grey);margin-top:8px}
+
+.card{background:linear-gradient(180deg,var(--panel),var(--bg2));border-radius:20px;padding:38px 40px;position:relative;overflow:hidden}
+.card .glow{display:none}
+.tag{display:inline-flex;align-items:center;gap:10px;font-size:18px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ac,var(--teal))}
+
+.icon-chip{width:62px;height:62px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:var(--ac,var(--teal))1a}
+.icon-chip svg{width:34px;height:34px;stroke:var(--ac,var(--teal));fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+.img-frame{background:transparent!important;border:none!important;border-radius:18px;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative}
+.img-frame img{width:100%;height:100%;object-fit:contain;display:block}
+.img-frame.cover img{object-fit:cover}
+/* shared hero image — identical box on slides 07 & 08, layered above title + accent line */
+.hero3d{position:absolute;left:80px;right:80px;top:168px;height:648px;z-index:6;border-radius:0}
+.cap{font-size:19px;color:var(--dgrey);text-align:center;margin-top:12px;font-family:var(--mono);letter-spacing:.02em}
+
+/* legend */
+.legend{display:flex;gap:0;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+.legend .sw{flex:1;padding:12px 6px 10px;text-align:center}
+.legend .sw .bar{height:10px;border-radius:3px;margin-bottom:8px}
+.legend .sw .t{font-size:15px;color:var(--grey)}
+.legend-title{font-size:17px;color:var(--dgrey);font-family:var(--mono);letter-spacing:.05em;margin-bottom:9px;text-transform:uppercase}
+
+/* thermal */
+.thermal{height:14px;border-radius:8px;background:linear-gradient(90deg,#d22314,#f0961e,#fadc32,#3cb478,#1446c8)}
+.thermal-row{display:flex;justify-content:space-between;font-size:17px;color:var(--grey);font-family:var(--mono);margin-top:8px}
+
+table.tbl{width:100%;border-collapse:collapse;font-size:21px}
+table.tbl th{text-align:left;color:var(--grey);font-weight:600;font-size:16px;letter-spacing:.08em;text-transform:uppercase;padding:10px 14px;border-bottom:1px solid var(--line2)}
+table.tbl td{padding:11px 14px;border-bottom:1px solid var(--line);color:var(--white)}
+table.tbl td.code{font-family:var(--mono);color:#7fe3dd;font-size:19px}
+table.tbl td .pill{display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:-3px;margin-right:10px}
+
+ul.feat{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:6px}
+ul.feat li{display:flex;gap:14px;font-size:23px;color:var(--grey);line-height:1.4}
+ul.feat li::before{content:"";flex:none;width:9px;height:9px;border-radius:3px;background:var(--ac,var(--teal));margin-top:9px}
+ul.feat li b{color:var(--white);font-weight:600}
+
+.note{margin-top:auto;padding:16px 20px;background:rgba(255,255,255,.05);border-radius:12px;font-size:19px;color:var(--grey)}
+
+/* overlay tags on images */
+.meta-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.meta{background:rgba(26,29,36,.92);backdrop-filter:blur(8px);border-radius:12px;padding:16px 18px}
+.meta .k{font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:var(--dgrey)}
+.meta .v{font-size:22px;color:var(--white);font-weight:600;margin-top:4px}
+
+.float-label{position:absolute;white-space:nowrap;padding:8px 18px;background:rgba(0,0,0,.62);backdrop-filter:blur(6px);border:1px solid var(--line2);border-radius:10px;color:#fff;font-weight:600;font-size:26px}
+
+/* ── TITLE slide ── */
+.slide.title{padding:0;background:
+  radial-gradient(90% 80% at 80% 10%,rgba(71,45,123,.5),transparent 55%),
+  radial-gradient(80% 70% at 8% 95%,rgba(33,144,140,.42),transparent 55%),
+  linear-gradient(135deg,#0c0e13,#08090b 60%)}
+.title .net{position:absolute;inset:0;opacity:.5}
+.title .inner{position:absolute;left:96px;right:96px;bottom:96px;z-index:2}
+.title .course{font-size:24px;letter-spacing:.32em;text-transform:uppercase;color:var(--grey);font-weight:500;margin-bottom:auto}
+.title .kicker{position:absolute;top:96px;left:96px;font-size:24px;letter-spacing:.32em;text-transform:uppercase;color:var(--grey);font-weight:500;display:flex;align-items:center;gap:16px;z-index:2}
+.title h1{font-family:var(--serif);font-weight:600;font-size:118px;line-height:1.0;letter-spacing:-.025em;color:#fff;margin-bottom:26px}
+.title h1 .accent{background:linear-gradient(120deg,#5ec962,#21908c);-webkit-background-clip:text;background-clip:text;color:transparent}
+.title .sub{font-size:34px;color:var(--grey);max-width:1200px;line-height:1.45}
+.title .rule{height:1px;background:linear-gradient(90deg,var(--line2),transparent);margin:40px 0 30px}
+.title .meta{display:flex;justify-content:space-between;align-items:flex-end}
+.title .meta .l{font-size:22px;color:var(--dgrey);line-height:1.7}
+.title .meta .l b{color:var(--teal);font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:18px;display:block;margin-bottom:6px}
+.title .meta .r{text-align:right;font-size:22px;color:var(--grey);line-height:1.85}
+
+/* ── CONTENTS ── */
+.toc{display:flex;flex-direction:column;flex:1;min-height:0;margin-top:8px}
+.toc-row{display:grid;grid-template-columns:84px 1fr;align-items:center;gap:28px;padding:22px 8px;border-top:1px solid var(--line);transition:.25s;position:relative}
+.toc-row:last-child{border-bottom:1px solid var(--line)}
+.toc-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:0;background:var(--ac);transition:.3s}
+.toc-row:hover::before{width:3px}
+.toc-row:hover{background:rgba(255,255,255,.02)}
+.toc-row .num{font-family:var(--serif);font-weight:600;font-size:40px;color:var(--ac);display:flex;align-items:center;gap:18px}
+.toc-row .ico{width:30px;height:30px;stroke:var(--ac);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.toc-row .t{font-size:30px;color:var(--white);font-weight:600}
+.toc-row .d{font-size:21px;color:var(--dgrey);margin-top:3px}
+
+/* pipeline */
+.pipe{display:flex;align-items:stretch;gap:0}
+.pipe-col{display:flex;flex-direction:column;justify-content:center;gap:22px;flex:1}
+.pipe-bookend{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-radius:18px;background:linear-gradient(180deg,var(--panel),var(--bg2));padding:30px 18px;width:210px;flex:none}
+.pipe-bookend .eb{font-size:15px;letter-spacing:.16em;text-transform:uppercase;color:var(--ac,#fff);font-weight:600;margin-bottom:14px}
+.pipe-bookend .bt{font-family:var(--serif);font-size:30px;color:#fff;font-weight:600;line-height:1.08}
+.pipe-bookend .bs{font-size:18px;color:var(--grey);margin-top:12px}
+.pnode{border-radius:14px;background:linear-gradient(180deg,var(--panel),var(--bg2));padding:20px 24px}
+.pnode .pk{font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--ac);font-weight:600}
+.pnode .pt{font-size:27px;color:#fff;font-weight:600;margin:5px 0 6px}
+.pnode .pd{font-size:18px;color:var(--grey);line-height:1.4}
+.pnode .step{font-family:var(--mono);font-size:15px;color:var(--ac);margin-top:8px}
+.pipe-arrow{display:flex;align-items:center;justify-content:center;width:60px;flex:none;color:var(--xdgrey)}
+.pipe-arrow svg{width:34px;height:34px;stroke:var(--dgrey);fill:none;stroke-width:1.6}
+.pcol2{display:flex;flex-direction:column;gap:10px;flex:1}
+.psub{border-radius:12px;background:rgba(255,255,255,.045);padding:13px 18px;font-size:15px;color:var(--grey);line-height:1.5}
+.psub .ph{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--ac,var(--teal));font-weight:600;margin-bottom:5px}
+.psub b{color:var(--white);font-weight:600}
+
+.reasons{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+.reason{position:relative;padding:24px 26px;border-radius:16px;background:linear-gradient(180deg,var(--panel),var(--bg2))}
+.reason .rn{font-family:var(--mono);font-size:20px;color:var(--ac);font-weight:600}
+.reason .rt{font-size:28px;color:#fff;font-weight:600;margin:10px 0 12px;line-height:1.15}
+.reason .rd{font-size:21px;color:var(--grey);line-height:1.45}
+
+.statements{display:flex;flex-direction:column;gap:14px;flex:1;justify-content:center}
+.statement{display:grid;grid-template-columns:90px 1fr;align-items:center;gap:24px;background:linear-gradient(90deg,var(--panel),var(--bg2));border-radius:14px;padding:22px 28px}
+.statement .sn{font-family:var(--serif);font-weight:600;font-size:46px;color:var(--ac)}
+.statement .st{font-size:25px;color:var(--white);line-height:1.35}
+.statement .st b{color:#fff;font-weight:600}
+
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:30px;flex:1;min-height:0}
+.flow{display:flex;align-items:center;gap:14px}
+.flow .fbox{flex:1;background:var(--panel);border-radius:12px;padding:16px 20px;text-align:center}
+.flow .fbox .ft{font-size:21px;color:#fff;font-weight:600}
+.flow .fbox .fs{font-size:16px;color:var(--grey);margin-top:3px;font-family:var(--mono)}
+.flow .farr{color:var(--dgrey);font-size:30px}
+
+/* ── PREDICTION RESULTS ── */
+.cmp{display:flex;gap:30px;flex:1;min-height:0}
+.cmp-col{flex:1;display:flex;flex-direction:column;min-height:0}
+.cmp-h{text-align:center;font-size:22px;font-weight:600;margin-bottom:10px}
+.results{display:flex;gap:44px;align-items:stretch}
+.res-left{flex:0 0 30%;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--line);padding-right:40px}
+.acc-num{font-family:var(--serif);font-weight:600;font-size:80px;line-height:.9;color:var(--accc,var(--teal))}
+.acc-num span{font-size:40px}
+.acc-lbl{font-size:18px;color:var(--grey);margin-top:10px}
+.rstats{display:flex;gap:34px;margin-top:24px}
+.rs .rv{font-family:var(--serif);font-weight:600;font-size:36px;line-height:1}
+.rs .rl{font-size:14px;color:var(--grey);margin-top:5px;text-transform:uppercase;letter-spacing:.08em}
+.res-right{flex:1;display:flex;flex-direction:column}
+.confhead{font-size:16px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey);font-weight:600;margin-bottom:16px}
+.conflist{display:flex;flex-direction:column;gap:13px}
+.confrow{display:grid;grid-template-columns:42px 1fr 160px;align-items:center;gap:20px}
+.confrow .cc{font-family:var(--serif);font-weight:600;font-size:28px;color:#ff6a5e;text-align:right}
+.cpair{display:flex;align-items:center;gap:9px;font-size:21px;color:#fff;white-space:nowrap}
+.cpair .dot{width:14px;height:14px;border-radius:4px;flex:none}
+.cpair .arr{color:var(--dgrey);margin:0 4px;font-size:18px}
+.cpair .nm{color:var(--grey)}
+.cbar{height:8px;background:#1c1f26;border-radius:4px;overflow:hidden}
+.cbar i{display:block;height:100%;background:linear-gradient(90deg,#c0392b,#ff6a5e);border-radius:4px}
+.insight{margin-top:auto;padding-top:18px;font-size:18px;color:var(--grey);line-height:1.5}
+.insight b{color:#fff;font-weight:600}
+
+/* ── CONCLUSION ── */
+.ccompare{display:flex;align-items:center;justify-content:center;gap:56px}
+.cc-side{text-align:center}
+.cc-num{font-family:var(--serif);font-weight:600;font-size:90px;line-height:.9}
+.cc-num span{font-size:44px}
+.cc-lbl{font-size:19px;color:var(--grey);margin-top:12px}
+.cc-tag{display:inline-block;margin-top:12px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;padding:6px 16px;border-radius:20px;border:1px solid currentColor}
+.cc-vs{font-family:var(--serif);font-style:italic;font-size:28px;color:var(--dgrey)}
+.cc-note{text-align:center;font-size:20px;color:var(--grey)}
+.cc-note b{color:#fff;font-weight:600}
+.takeaways{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.tk{border-radius:18px;background:linear-gradient(180deg,var(--panel),var(--bg2));padding:28px 30px;display:flex;flex-direction:column}
+.tk .tkn{font-family:var(--mono);font-size:17px;color:var(--ac);font-weight:600;letter-spacing:.05em}
+.tk .tkt{font-family:var(--serif);font-size:25px;color:#fff;font-weight:600;margin:14px 0;line-height:1.15}
+.tk .tkd{font-size:18px;color:var(--grey);line-height:1.5}
+.tk .tkd b{color:#fff;font-weight:600}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<div id="deck">
+  <div class="stage" id="stage">
+
+  <!-- ════════ 01 · TITLE ════════ -->
+  <section class="slide title">
+    <svg class="net" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <g stroke="#21908c" stroke-width="1.2" opacity="0.5">
+        <line x1="300" y1="240" x2="520" y2="380"/><line x1="520" y1="380" x2="430" y2="600"/>
+        <line x1="520" y1="380" x2="760" y2="300"/><line x1="760" y1="300" x2="900" y2="500"/>
+        <line x1="430" y1="600" x2="640" y2="720"/><line x1="900" y1="500" x2="640" y2="720"/>
+        <line x1="1500" y1="180" x2="1680" y2="360"/><line x1="1680" y1="360" x2="1520" y2="540"/>
+        <line x1="1500" y1="180" x2="1320" y2="320"/>
+      </g>
+      <g fill="#5ec962">
+        <circle cx="300" cy="240" r="7"/><circle cx="760" cy="300" r="6"/>
+        <circle cx="1500" cy="180" r="7"/><circle cx="1320" cy="320" r="6"/>
+      </g>
+      <g fill="#21908c">
+        <circle cx="430" cy="600" r="6"/><circle cx="640" cy="720" r="7"/>
+        <circle cx="1520" cy="540" r="6"/>
+      </g>
+      <g fill="#ff453a">
+        <circle cx="520" cy="380" r="17"/><circle cx="900" cy="500" r="15"/><circle cx="1680" cy="360" r="14"/>
+      </g>
+    </svg>
+    <div class="kicker"><span style="width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 14px var(--teal)"></span>GraphML · Group 02</div>
+    <div class="inner">
+      <h1>Graph Learning Pipeline<br>for Architectural <span class="accent">Floor Plans</span></h1>
+      <div class="sub">Node classification on the Narkomfin Building using GraphSAGE — from redrawn geometry to a labelled spatial graph and predicted room types.</div>
+      <div class="rule"></div>
+      <div class="meta">
+        <div class="l"><b>Final Assignment</b>MaCAD 2025/26 · IAAC<br>Digital Tools for Graph Machine Learning</div>
+        <div class="r">Lakzhmy Zaro · María Sánchez<br>Charles Abi Chahine · Emilie El Chidiac</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ 02 · CONTENTS ════════ -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span>Contents</div>
+    <h1 class="head">What we cover.</h1>
+    <div class="accent-line"></div>
+    <div class="toc">
+      <div class="toc-row" style="--ac:var(--c0)"><div class="num">01<svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div><div><div class="t">Modified Swiss Dwellings</div><div class="d">A benchmark of 5,372 residential floor plans encoded as spatial graphs</div></div></div>
+      <div class="toc-row" style="--ac:var(--c2)"><div class="num">02<svg class="ico" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div><div><div class="t">Literature</div><div class="d">Two papers and one pretrained GraphSAGE-Pool model</div></div></div>
+      <div class="toc-row" style="--ac:var(--c4)"><div class="num">03<svg class="ico" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 7l8 0M7 8l4 8M17 8l-4 8"/></svg></div><div><div class="t">Data Structure</div><div class="d">Nodes, edges, features and ground-truth room-type labels</div></div></div>
+      <div class="toc-row" style="--ac:var(--c5)"><div class="num">04<svg class="ico" viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-6h6v6"/></svg></div><div><div class="t">The Narkomfin Building</div><div class="d">Dom-kommuna, two unit types, one ideal graph-ML subject</div></div></div>
+      <div class="toc-row" style="--ac:var(--c7)"><div class="num">05<svg class="ico" viewBox="0 0 24 24"><path d="M4 18L10 10l4 4 6-9"/><circle cx="4" cy="18" r="1.6"/><circle cx="20" cy="5" r="1.6"/></svg></div><div><div class="t">Graph Analysis</div><div class="d">Centrality measures, shortest paths and spatial logic</div></div></div>
+      <div class="toc-row" style="--ac:var(--c8)"><div class="num">06<svg class="ico" viewBox="0 0 24 24"><path d="M12 3a4 4 0 0 1 4 4 4 4 0 0 1 0 8 4 4 0 0 1-8 0 4 4 0 0 1 0-8 4 4 0 0 1 4-4z"/><path d="M12 7v10"/></svg></div><div><div class="t">Node Classification</div><div class="d">Room-type prediction from zoning features using GraphSAGE</div></div></div>
+    </div>
+    <div class="foot"><div class="brand"><b>GraphML_G02</b></div><div>01 / 18</div></div>
+  </section>
+
+  <!-- ════════ 03 · DATASET ════════ -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span>01 — Dataset</div>
+    <h1 class="head">Modified Swiss Dwellings.</h1>
+    <div class="accent-line"></div>
+    <div class="body" style="gap:22px;justify-content:space-between">
+      <div class="chips">
+        <span class="chip on">5,372 floor plans</span>
+        <span class="chip">Multi-apartment clusters</span>
+        <span class="chip">Corridor buildings</span>
+        <span class="chip">Single units</span>
+        <span class="chip">Graph modality</span>
+      </div>
+      <div class="img-frame" style="width:100%"><img src="img/samples3_tight.png" alt="sample plans" style="width:100%;height:auto"></div>
+      <div class="cap">Three sample plans — a wide variety of residential typologies, scales and orientations · node colour encodes room type</div>
+      <div class="stats">
+        <div class="stat" style="--ac:var(--c0)"><div class="n">5,372</div><div class="l">Floor Plans</div></div>
+        <div class="stat" style="--ac:var(--c4)"><div class="n">9</div><div class="l">Room Types</div></div>
+        <div class="stat" style="--ac:var(--c7)"><div class="n">4</div><div class="l">Zone Types</div></div>
+        <div class="stat" style="--ac:var(--c8)"><div class="n" style="font-size:40px">.pickle</div><div class="l">Graph Format</div></div>
+      </div>
+    </div>
+    <div class="foot"><div class="brand"><b>GraphML_G02</b></div><div>02 / 18</div></div>
+  </section>
+
+  <!-- ════════ 04 · LITERATURE ════════ -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span>02 — Literature</div>
+    <h1 class="head">Two papers, one pipeline.</h1>
+    <div class="accent-line"></div>
+    <div class="body"><div class="cols2">
+      <div class="card" style="--ac:var(--c4);display:flex;flex-direction:column"><span class="glow"></span>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div class="tag">Paper 01</div>
+          <div class="icon-chip" style="--ac:var(--c4)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+        </div>
+        <div style="font-family:var(--serif);font-size:33px;color:#fff;font-weight:600;line-height:1.2;margin:16px 0 8px">MSD: A Benchmark Dataset for Floor Plan Generation of Building Complexes</div>
+        <div style="font-family:var(--mono);font-size:18px;color:var(--grey);margin-bottom:18px">ECCV 2024 · TU Delft</div>
+        <ul class="feat" style="--ac:var(--c4)">
+          <li>5,372 Swiss residential floor plans</li>
+          <li>3 modalities: <b>image, geometry, graph</b></li>
+          <li>Graph encodes spatial <b>zones</b>, not room types</li>
+        </ul>
+        <div class="note" style="--ac:var(--c4)">Primary data source for this project.</div>
+      </div>
+      <div class="card" style="--ac:var(--c5);display:flex;flex-direction:column"><span class="glow"></span>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div class="tag" style="--ac:var(--c5)">Paper 02</div>
+          <div class="icon-chip" style="--ac:var(--c5)"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/><path d="M8 7l8 0M7 8l4 8M17 8l-4 8"/></svg></div>
+        </div>
+        <div style="font-family:var(--serif);font-size:33px;color:#fff;font-weight:600;line-height:1.2;margin:16px 0 8px">GNN for Node Classification & Attribute Allocation in Architectural BIM</div>
+        <div style="font-family:var(--mono);font-size:18px;color:var(--grey);margin-bottom:18px">eCAADe 2024 · Cardiff University</div>
+        <ul class="feat" style="--ac:var(--c5)">
+          <li>Same MSD dataset, graphs via <b>TopologicPy</b></li>
+          <li>Benchmarks GCN, GAT, GraphSAGE</li>
+          <li><b>GraphSAGE-Pool</b>, 4 layers, ~95% accuracy</li>
+        </ul>
+        <div class="note" style="--ac:var(--c5)">Pretrained model applied to our floor plan.</div>
+      </div>
+    </div></div>
+    <div class="foot"><div class="brand"><b>GraphML_G02</b></div><div>03 / 18</div></div>
+  </section>
+
+  <!-- ════════ 05 · DATA STRUCTURE ════════ -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span>03 — Data Structure</div>
+    <h1 class="head">What the graph encodes.</h1>
+    <div class="accent-line"></div>
+    <div class="body"><div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:20px;flex:1;min-height:0">
+      <div class="card" style="--ac:var(--c4);padding:26px 30px"><span class="glow"></span>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div style="font-size:24px;color:#fff;font-weight:600"><span class="code" style="font-family:var(--mono);color:#7fe3dd">graph_in</span> — model input</div></div>
+        <table class="tbl"><tr><th>Attribute</th><th>Type</th><th>Values</th></tr>
+          <tr><td class="code">zoning_type</td><td>int</td><td>0 · 1 · 2 · 3</td></tr>
+          <tr><td class="code">connectivity</td><td>str</td><td>'door' · 'entrance'</td></tr>
+        </table>
+      </div>
+      <div class="card" style="--ac:var(--c5);padding:26px 30px"><span class="glow"></span>
+        <div style="font-size:24px;color:#fff;font-weight:600;margin-bottom:14px"><span style="font-family:var(--mono);color:#9be7b6">graph_out</span> — ground truth</div>
+        <table class="tbl"><tr><th>Attribute</th><th>Type</th><th>Description</th></tr>
+          <tr><td class="code">room_type</td><td>int</td><td>0 – 8</td></tr>
+          <tr><td class="code">geometry</td><td>Polygon</td><td>2D room outline</td></tr>
+          <tr><td class="code">centroid</td><td>Point</td><td>centre of room</td></tr>
+        </table>
+      </div>
+      <div class="card" style="--ac:var(--c7);padding:26px 30px"><span class="glow"></span>
+        <div style="font-size:24px;color:#fff;font-weight:600;margin-bottom:14px">Room types (0 – 8)</div>
+        <table class="tbl" style="font-size:18px"><tr><th>ID</th><th>Room</th><th>ID</th><th>Room</th></tr>
+          <tr><td><span class="pill" style="background:var(--c0)"></span>0</td><td>Bedroom</td><td><span class="pill" style="background:var(--c5)"></span>5</td><td>Stairs</td></tr>
+          <tr><td><span class="pill" style="background:var(--c1)"></span>1</td><td>Living room</td><td><span class="pill" style="background:var(--c6)"></span>6</td><td>Storeroom</td></tr>
+          <tr><td><span class="pill" style="background:var(--c2)"></span>2</td><td>Kitchen</td><td><span class="pill" style="background:var(--c7)"></span>7</td><td>Bathroom</td></tr>
+          <tr><td><span class="pill" style="background:var(--c3)"></span>3</td><td>Dining</td><td><span class="pill" style="background:var(--c8)"></span>8</td><td>Balcony</td></tr>
+          <tr><td><span class="pill" style="background:var(--c4)"></span>4</td><td>Corridor</td><td></td><td></td></tr>
+        </table>
+      </div>
+      <div class="card" style="--ac:var(--c8);padding:26px 30px"><span class="glow"></span>
+        <div style="font-size:24px;color:#fff;font-weight:600;margin-bottom:14px">Zone types (0 – 3)</div>
+        <table class="tbl" style="font-size:19px"><tr><th>ID</th><th>Zone</th><th>Typical rooms</th></tr>
+          <tr><td>0</td><td>Private</td><td>bedroom</td></tr>
+          <tr><td>1</td><td>Dynamic</td><td>corridor, entrance</td></tr>
+          <tr><td>2</td><td>Static</td><td>bedroom, bathroom</td></tr>
+          <tr><td>3</td><td>Functional</td><td>kitchen, storeroom</td></tr>
+        </table>
+      </div>
+    </div></div>
+    <div class="foot"><div class="brand"><b>GraphML_G02</b></div><div>04 / 18</div></div>
+  </section>
+
+  <!-- ════════ 06 · PLAN → GRAPH ════════ -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span>03 — Data Structure</div>
+    <h1 class="head">From floor plan to graph.</h1>
+    <div class="accent-line"></div>
+    <div class="body" style="gap:18px;justify-content:space-between">
+      <div class="flow">
+        <div class="fbox" style="--ac:var(--c1)"><div class="ft">Zone label per node</div><div class="fs">zoning_type input</div></div>
+        <div class="farr">→</div>
+        <div class="fbox" style="--ac:var(--c4)"><div class="ft">Graph topology</div><div class="fs">door / entrance edges</div></div>
+        <div class="farr">→</div>
+        <div class="fbox" style="--ac:var(--c8)"><div class="ft">Room type prediction</div><div class="fs">GraphSAGE-Pool output</div></div>
+      </div>
+      <div class="img-frame" style="width:100%"><img src="img/plan_graph-2_tight.png" alt="plan to graph" style="width:100%;height:auto"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px">
+        <div>
+          <div class="legend-title">Room types — left plan</div>
+          <div class="legend" data-nonum></div>
+        </div>
+        <div style="display:flex;gap:40px;align-items:flex-start">
+          <div style="flex:1.6">
+            <div class="legend-title">Zone types — right plan</div>
+            <div class="legend" data-zone>
+              <div class="sw"><div class="bar" style="background:#E8DAEF"></div><div class="t">0 – Private</div></div>
+              <div class="sw"><div class="bar" style="background:#D5F5E3"></div><div class="t">1 – Dynamic</div></div>
+              <div class="sw"><div class="bar" style="background:#FDEBD0"></div><div class="t">2 – Static</div></div>
+              <div class="sw"><div class="bar" style="background:#D6EAF8"></div><div class="t">3 – Functional</div></div>
+            </div>
+          </div>
+          <div style="flex:1">
+            <div class="legend-title">Edge types</div>
+            <div style="display:flex;gap:26px;padding-top:11px">
+              <span style="display:inline-flex;align-items:center;gap:9px;font-size:16px;color:var(--grey)"><span style="width:28px;height:4px;border-radius:2px;background:#4a6f9c"></span>door</span>
+              <span style="display:inline-flex;align-items:center;gap:9px;font-size:16px;color:var(--grey)"><span style="width:28px;height:4px;border-radius:2px;background:#c0392b"></span>entrance</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><div class="brand"><b>GraphML_G02</b></div><div>05 / 18</div></div>
+  </section>
+
+  <!-- ════════ 07 · PIPELINE ════════ -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span>Process</div>
+    <h1 class="head">One building, two paths, one read.</h1>
+    <div class="accent-line"></div>
+    <div class="body" style="justify-content:center"><div class="pipe">
+      <div class="pipe-bookend" style="--ac:#fff"><div class="eb">Decision</div><div class="bt">The<br>Narkomfin</div><div class="bs">our case study</div></div>
+      <div class="pipe-arrow"><svg viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></svg></div>
+      <div class="pipe-col">
+        <div style="display:flex;align-items:stretch;gap:14px">
+          <div class="pnode" style="--ac:var(--c1);flex:none;width:230px"><div class="pk">Geometry</div><div class="pt">Floor Plan</div><div class="pd">2D plan, redrawn</div></div>
+          <div class="pipe-arrow"><svg viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></svg></div>
+          <div class="pcol2" style="--ac:var(--c4)">
+            <div class="pnode" style="--ac:var(--c4)"><div class="pt">Spatial Analysis</div><div class="pd">How each room sits within the circulation network.</div><div class="step">02.1 OBJ→BREP · 02.2–02.4 centrality & shortest path</div></div>
+            <div class="psub" style="--ac:var(--c4)"><div class="ph">How it works</div>The plan is grid-sliced into a Topologic <b>shell</b>, from which navigation &amp; analysis <b>graphs</b> are derived. Metrics: <b>closeness</b> = integration, <b>betweenness</b> = choice, plus degree, community detection and isovist visibility.</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:stretch;gap:14px">
+          <div class="pnode" style="--ac:var(--c1);flex:none;width:230px"><div class="pk">Geometry</div><div class="pt">Simplified 3D</div><div class="pd">rooms as volumes</div></div>
+          <div class="pipe-arrow"><svg viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></svg></div>
+          <div class="pcol2" style="--ac:var(--c5)">
+            <div class="pnode" style="--ac:var(--c5)"><div class="pt">Graph Preparation</div><div class="pd">Encode the 3D model as a labelled input graph.</div><div class="step">03.0 Rhino→cell complex · 03.1 label nodes & edges</div></div>
+            <div class="psub" style="--ac:var(--c5)"><div class="ph">How it works</div>Named Rhino room volumes + aperture surfaces build a TopologicPy <b>CellComplex</b> &amp; room graph. MSD features encoded: 4-class <b>zoning_type</b>, door / passage / entrance <b>connectivity</b>, exported to CSV for GraphSAGE.</div>
+          </div>
+          <div class="pipe-arrow"><svg viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></svg></div>
+          <div class="pnode" style="--ac:var(--c8);flex:none;width:240px"><div class="pt">Prediction</div><div class="pd">Infer room types from zoning.</div><div class="step">03.2 GraphSAGE-Pool</div></div>
+        </div>
+      </div>
+      <div class="pipe-arrow"><svg viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></svg></div>
+      <div class="pipe-bookend" style="--ac:var(--c5)"><div class="eb">Outcome</div><div class="bt">Conclusion</div><div class="bs">what the graph knows</div></div>
+    </div></div>
+    <div class="foot"><div class="brand"><b>GraphML_G02</b></div><div>06 / 18</div></div>
+  </section>
+
+  <!-- ════════ 08 · NARKOMFIN INTRO ════════ -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span>04 — The Narkomfin Building</div>
+    <h1 class="head">A machine for collective living.</h1>
+    <div class="accent-line"></div>
+    <div class="img-frame hero3d"><img src="img/pngs/actual-3d_tight.png" alt="narkomfin 3d"></div>
+    <div class="meta-strip" style="position:absolute;left:80px;right:80px;bottom:96px;z-index:7">
+      <div class="meta" style="--ac:var(--c1)"><div class="k">Architects</div><div class="v" style="font-size:19px">Ginzburg & Milinis</div></div>
+      <div class="meta" style="--ac:var(--c3)"><div class="k">Year</div><div class="v">1930</div></div>
+      <div class="meta" style="--ac:var(--c4)"><div class="k">Location</div><div class="v" style="font-size:19px">Moscow, Russia</div></div>
+      <div class="meta" style="--ac:var(--c5)"><div class="k">Typology</div><div class="v">Dom-kommuna</div></div>
+      <div class="meta" style="--ac:var(--c6)"><div class="k">Scale</div><div class="v" style="font-size:19px">54 units · 6 floors</div></div>
+      <div class="meta" style="--ac:var(--c8)"><div class="k">Unit types</div><div class="v">F · K</div></div>
+    </div>
+    <div class="foot"><div class="brand"><b>GraphML_G02</b></div><div>07 / 18</div></div>
+  </section>
+
+  <!-- ════════ 09 · WHY GRAPH ML ════════ -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span>04 — The Narkomfin Building</div>
+    <h1 class="head">Why it maps to graph ML.</h1>
+    <div class="accent-line"></div>
+    <div class="img-frame hero3d"><img src="img/pngs/actual-3d_tight.png" alt="narkomfin"></div>
+    <div class="reasons" style="position:absolute;left:80px;right:80px;bottom:64px;z-index:7">
+      <div class="reason" style="--ac:var(--c1)"><div class="rn">01</div><div class="rt">Clear spatial hierarchy</div><div class="rd">Discrete living cells and corridors form a readable room-to-room structure.</div></div>
+      <div class="reason" style="--ac:var(--c4)"><div class="rn">02</div><div class="rt">Repetitive unit typologies</div><div class="rd">Two unit types — F-type and K-type — repeat cleanly across every floor.</div></div>
+      <div class="reason" style="--ac:var(--c5)"><div class="rn">03</div><div class="rt">Explicit functional zoning</div><div class="rd">A dom-kommuna where living, communal and circulation zones are clearly defined.</div></div>
+    </div>
+    <div class="foot"><div class="brand"><b>GraphML_G02</b></div><div>08 / 18</div></div>
+  </section>
+
+  <!-- ════════ 10 · SIMPLIFIED MODEL ════════ -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span>04 — The Narkomfin Building</div>
+    <h1 class="head">Simplified model, rooms as volumes.</h1>
+    <div class="accent-line"></div>
+    <div class="img-frame hero3d" style="top:204px"><img src="img/pngs/simplified-3d_tight.png" alt="simplified 3d"></div>
+    <div style="position:absolute;left:80px;right:80px;bottom:64px;z-index:7">
+      <div class="legend-title">Node colour encodes room type</div>
+      <div class="legend" id="legendA"></div>
+    </div>
+    <div class="foot"><div class="brand"><b>GraphML_G02</b></div><div>09 / 18</div></div>
+  </section>
+
+  <!-- ════════ 11 · EXPLODED AXON ════════ -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span>04 — The Narkomfin Building</div>
+    <h1 class="head">Exploded axonometric by floor type.</h1>
+    <div class="accent-line"></div>
+    <div class="body" style="gap:18px">
+      <div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center">
+        <div style="position:relative;height:100%;display:flex">
+          <img src="img/pngs/simplified-3d-exploded_tight.png" alt="exploded" style="height:100%;width:auto;display:block">
+          <div class="float-label" style="left:0%;top:69%">Amenities</div>
+          <div class="float-label" style="left:62%;top:3%">F-type</div>
+          <div class="float-label" style="left:52%;top:88%">K-type</div>
+        </div>
+      </div>
+      <div>
+        <div class="legend-title">Node colour encodes room type</div>
+        <div class="legend" id="legendB"></div>
+      </div>
+    </div>
+    <div class="foot"><div class="brand"><b>GraphML_G02</b></div><div>10 / 18</div></div>
+  </section>
+
+  <!-- ════════ 12 · FIVE LEVELS ════════ -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span>04 — The Narkomfin Building</div>
+    <h1 class="head">K-type & F-type, five levels.</h1>
+    <div class="accent-line"></div>
+    <div class="body" style="gap:18px">
+      <div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center">
+        <div style="position:relative;height:100%;display:flex">
+          <img src="img/pngs/exploded-levels.png" alt="levels" style="height:100%;width:auto;display:block">
+          <div class="float-label" style="left:45%;top:40%;border-color:#21908c;color:#9ff0ea">K-type</div>
+          <div class="float-label" style="left:45%;top:49%">L2</div>
+          <div class="float-label" style="left:45%;top:75%">L1</div>
+          <div class="float-label" style="left:99%;top:29%;border-color:#21908c;color:#9ff0ea">F-type</div>
+          <div class="float-label" style="left:99%;top:38%">L5</div>
+          <div class="float-label" style="left:99%;top:63%">L4</div>
+          <div class="float-label" style="left:99%;top:84%">L3</div>
+        </div>
+      </div>
+      <div>
+        <div class="legend-title">Node colour encodes room type</div>
+        <div class="legend" id="legendC"></div>
+      </div>
+    </div>
+    <div class="foot"><div class="brand"><b>GraphML_G02</b></div><div>11 / 18</div></div>
+  </section>
+
+  <!-- ════════ 13 · CLOSENESS ════════ -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span>05 — Graph Analysis</div>
+    <h1 class="head">Closeness centrality, Type K.</h1>
+    <div class="accent-line"></div>
+    <div class="body" style="gap:18px">
+      <div class="cols2" style="grid-template-columns:1.5fr 1fr">
+        <div class="img-frame" style="background:#000"><img src="img/plan1-closeness-centrality.png" alt="closeness"></div>
+        <div style="display:flex;flex-direction:column;justify-content:center;gap:22px">
+          <ul class="feat" style="--ac:var(--c4);font-size:25px">
+            <li><b>Corridor scores highest</b> — fewest steps to every room</li>
+            <li>Closeness drops steadily into private cells</li>
+            <li>Staircase block scores lowest — dead-end terminal</li>
+            <li>Corridor is the social and circulatory core</li>
+          </ul>
+          <div>
+            <div class="thermal"></div>
+            <div class="thermal-row"><span>high integration</span><span>low integration</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><div class="brand"><b>GraphML_G02</b></div><div>12 / 18</div></div>
+  </section>
+
+  <!-- ════════ 14 · BETWEENNESS ════════ -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span>05 — Graph Analysis</div>
+    <h1 class="head">Betweenness centrality, Type K.</h1>
+    <div class="accent-line"></div>
+    <div class="body" style="gap:18px">
+      <div class="cols2" style="grid-template-columns:1.5fr 1fr">
+        <div class="img-frame" style="background:#000"><img src="img/plan1-betweenness-centrality.png" alt="betweenness"></div>
+        <div style="display:flex;flex-direction:column;justify-content:center;gap:22px">
+          <ul class="feat" style="--ac:var(--c8);font-size:25px">
+            <li><b>Central corridor sections carry the most traffic</b></li>
+            <li>Every cross-building journey passes through them</li>
+            <li>End rooms have near-zero betweenness — destinations only</li>
+            <li>Corridor is the most traversed and most accessible spine</li>
+          </ul>
+          <div>
+            <div class="thermal"></div>
+            <div class="thermal-row"><span>high traffic</span><span>low traffic</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><div class="brand"><b>GraphML_G02</b></div><div>13 / 18</div></div>
+  </section>
+
+  <!-- ════════ 15 · SHORTEST PATH ════════ -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span>05 — Graph Analysis</div>
+    <h1 class="head">Shortest path, Type K.</h1>
+    <div class="accent-line"></div>
+    <div class="body" style="gap:18px">
+      <div class="cols2" style="grid-template-columns:1.5fr 1fr">
+        <div class="img-frame" style="background:#000"><img src="img/plan1-shortest-path.png" alt="shortest path"></div>
+        <div style="display:flex;flex-direction:column;justify-content:center;gap:24px">
+          <ul class="feat" style="--ac:var(--c6);font-size:25px">
+            <li>Grid and straightened paths are nearly identical</li>
+            <li>Only <b>3.7% shorter</b> when straightened</li>
+            <li>Corridor is already the straightest possible route</li>
+            <li>Optimal path and only social route are the same</li>
+          </ul>
+          <div style="display:flex;gap:32px;font-family:var(--mono);font-size:18px;color:var(--grey)">
+            <span style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:6px;background:var(--red);border-radius:3px"></span>grid path · 77.2 u</span>
+            <span style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:6px;background:var(--blue);border-radius:3px"></span>straightened · 74.4 u</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><div class="brand"><b>GraphML_G02</b></div><div>14 / 18</div></div>
+  </section>
+
+  <!-- ════════ 16 · PREDICTION K ════════ -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span>06 — Node Classification</div>
+    <h1 class="head">Room type prediction, K-type.</h1>
+    <div class="accent-line"></div>
+    <div class="body" style="gap:18px">
+      <div class="results">
+        <div class="res-left" style="--accc:#e8b84b">
+          <div class="acc-num">67.9<span>%</span></div>
+          <div class="acc-lbl">rooms correctly classified · 55 / 81</div>
+          <div class="rstats">
+            <div class="rs"><div class="rv" style="color:#5ec962">55</div><div class="rl">Correct</div></div>
+            <div class="rs"><div class="rv" style="color:#ff5e54">26</div><div class="rl">Errors</div></div>
+            <div class="rs"><div class="rv" style="color:#fff">81</div><div class="rl">Rooms</div></div>
+          </div>
+        </div>
+        <div class="res-right">
+          <div class="confhead">Where it went wrong · true → predicted</div>
+          <div class="conflist">
+            <div class="confrow"><div class="cc">10</div><div class="cpair"><span class="dot" style="background:#472d7b"></span>Living room<span class="arr">→</span><span class="dot" style="background:#3b528b"></span><span class="nm">Kitchen</span></div><div class="cbar"><i style="width:100%"></i></div></div>
+            <div class="confrow"><div class="cc">9</div><div class="cpair"><span class="dot" style="background:#27ad81"></span>Stairs<span class="arr">→</span><span class="dot" style="background:#5ec962"></span><span class="nm">Storeroom</span></div><div class="cbar"><i style="width:90%"></i></div></div>
+            <div class="confrow"><div class="cc">6</div><div class="cpair"><span class="dot" style="background:#472d7b"></span>Living room<span class="arr">→</span><span class="dot" style="background:#21908c"></span><span class="nm">Corridor</span></div><div class="cbar"><i style="width:60%"></i></div></div>
+            <div class="confrow"><div class="cc">1</div><div class="cpair"><span class="dot" style="background:#27ad81"></span>Stairs<span class="arr">→</span><span class="dot" style="background:#addc30"></span><span class="nm">Bathroom</span></div><div class="cbar"><i style="width:10%"></i></div></div>
+          </div>
+          <div class="insight">Errors cluster on rooms with near-identical connectivity — <b>living rooms read as kitchens</b> and <b>stairs as storerooms</b>.</div>
+        </div>
+      </div>
+      <div class="cmp">
+        <div class="cmp-col"><div class="cmp-h" style="color:#fff">Ground truth</div><div class="img-frame"><img src="img/prediction/type-k-ground-truth.png" alt="gt"></div></div>
+        <div class="cmp-col"><div class="cmp-h" style="color:var(--teal)">Prediction</div><div class="img-frame"><img src="img/prediction/type-k-prediction.png" alt="pred"></div></div>
+      </div>
+      <div class="legend" id="legendD"></div>
+    </div>
+    <div class="foot"><div class="brand"><b>GraphML_G02</b></div><div>15 / 18</div></div>
+  </section>
+
+  <!-- ════════ 17 · PREDICTION F ════════ -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span>06 — Node Classification</div>
+    <h1 class="head">Room type prediction, F-type.</h1>
+    <div class="accent-line"></div>
+    <div class="body" style="gap:18px">
+      <div class="results">
+        <div class="res-left" style="--accc:#5ec962">
+          <div class="acc-num">91.3<span>%</span></div>
+          <div class="acc-lbl">rooms correctly classified · 210 / 230</div>
+          <div class="rstats">
+            <div class="rs"><div class="rv" style="color:#5ec962">210</div><div class="rl">Correct</div></div>
+            <div class="rs"><div class="rv" style="color:#ff5e54">20</div><div class="rl">Errors</div></div>
+            <div class="rs"><div class="rv" style="color:#fff">230</div><div class="rl">Rooms</div></div>
+          </div>
+        </div>
+        <div class="res-right">
+          <div class="confhead">Where it went wrong · true → predicted</div>
+          <div class="conflist">
+            <div class="confrow"><div class="cc">16</div><div class="cpair"><span class="dot" style="background:#3b528b"></span>Kitchen<span class="arr">→</span><span class="dot" style="background:#21908c"></span><span class="nm">Corridor</span></div><div class="cbar"><i style="width:100%"></i></div></div>
+            <div class="confrow"><div class="cc">2</div><div class="cpair"><span class="dot" style="background:#472d7b"></span>Living room<span class="arr">→</span><span class="dot" style="background:#21908c"></span><span class="nm">Corridor</span></div><div class="cbar"><i style="width:13%"></i></div></div>
+            <div class="confrow"><div class="cc">1</div><div class="cpair"><span class="dot" style="background:#5ec962"></span>Storeroom<span class="arr">→</span><span class="dot" style="background:#addc30"></span><span class="nm">Bathroom</span></div><div class="cbar"><i style="width:6%"></i></div></div>
+            <div class="confrow"><div class="cc">1</div><div class="cpair"><span class="dot" style="background:#addc30"></span>Bathroom<span class="arr">→</span><span class="dot" style="background:#27ad81"></span><span class="nm">Stairs</span></div><div class="cbar"><i style="width:6%"></i></div></div>
+          </div>
+          <div class="insight"><b>16 of 20 errors are kitchens predicted as corridor</b> — the single dominant blind spot; everything else is near-perfect.</div>
+        </div>
+      </div>
+      <div class="cmp">
+        <div class="cmp-col"><div class="cmp-h" style="color:#fff">Ground truth</div><div class="img-frame"><img src="img/prediction/type-f-ground-truth.png" alt="gt"></div></div>
+        <div class="cmp-col"><div class="cmp-h" style="color:var(--teal)">Prediction</div><div class="img-frame"><img src="img/prediction/type-f-prediction.png" alt="pred"></div></div>
+      </div>
+      <div class="legend" id="legendE"></div>
+    </div>
+    <div class="foot"><div class="brand"><b>GraphML_G02</b></div><div>16 / 18</div></div>
+  </section>
+
+  <!-- ════════ 18 · CONCLUSION ════════ -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span>Conclusion</div>
+    <h1 class="head">What the prediction tells us.</h1>
+    <div class="accent-line"></div>
+    <div class="body" style="gap:30px;justify-content:center">
+      <div class="ccompare">
+        <div class="cc-side">
+          <div class="cc-num" style="color:#5ec962">91.3<span>%</span></div>
+          <div class="cc-lbl">F-type · 210 / 230 rooms</div>
+          <div class="cc-tag" style="color:#5ec962">in-distribution</div>
+        </div>
+        <div class="cc-vs">vs</div>
+        <div class="cc-side">
+          <div class="cc-num" style="color:#e8b84b">67.9<span>%</span></div>
+          <div class="cc-lbl">K-type · 55 / 81 rooms</div>
+          <div class="cc-tag" style="color:#e8b84b">out-of-distribution</div>
+        </div>
+      </div>
+      <div class="cc-note">Same pretrained model, same building — <b>two very different results.</b></div>
+      <div class="takeaways">
+        <div class="tk" style="--ac:var(--c4)">
+          <div class="tkn">01</div>
+          <div class="tkt">It generalizes — unevenly</div>
+          <div class="tkd">F-type's duplex apartments resemble the Swiss Dwellings the model trained on, so it scores <b>91%</b>. K-type's communal <i>dom-kommuna</i> layout is unlike anything in training — accuracy falls to <b>68%</b>.</div>
+        </div>
+        <div class="tk" style="--ac:#e8b84b">
+          <div class="tkn">02</div>
+          <div class="tkt">Errors are systematic</div>
+          <div class="tkd">Mistakes aren't random — rooms sharing a connectivity signature get swapped: <b>living rooms ↔ kitchens</b>, <b>stairs ↔ storerooms</b>, open kitchens read as <b>corridor</b>. The graph confuses what is topologically alike.</div>
+        </div>
+        <div class="tk" style="--ac:var(--c1)">
+          <div class="tkn">03</div>
+          <div class="tkt">Topology captures convention</div>
+          <div class="tkd">Connectivity alone reads conventional plans well. The Narkomfin's <b>social-condenser program</b> — its whole point — is exactly what challenges the model. Richer features or fine-tuning would close the gap.</div>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><div class="brand"><b>GraphML_G02</b></div><div>17 / 18</div></div>
+  </section>
+
+  </div>
+</div>
+
+<div id="dots"></div>
+<div class="navhint">← → · space · F fullscreen</div>
+
+<script>
+const ROOMS=[['#440154','bedroom'],['#472d7b','living'],['#3b528b','kitchen'],['#2c728e','dining'],['#21908c','corridor'],['#27ad81','stairs'],['#5ec962','storeroom'],['#addc30','bathroom'],['#fde725','balcony']];
+document.querySelectorAll('.legend').forEach(el=>{
+  if(el.hasAttribute('data-zone'))return;
+  const noNum=el.hasAttribute('data-nonum');
+  el.innerHTML=ROOMS.map(([c,n],i)=>`<div class="sw"><div class="bar" style="background:${c}"></div><div class="t">${noNum?n:i+' – '+n}</div></div>`).join('');
+});
+
+const slides=[...document.querySelectorAll('.slide')];
+const N=slides.length;
+let cur=0;
+const bar=document.getElementById('bar');
+const dotsWrap=document.getElementById('dots');
+slides.forEach((_,i)=>{const b=document.createElement('button');b.onclick=()=>go(i);dotsWrap.appendChild(b);});
+const dots=[...dotsWrap.children];
+
+function go(i){
+  i=Math.max(0,Math.min(N-1,i));
+  slides[cur].classList.remove('active');
+  slides[cur].classList.toggle('prev',i>cur);
+  cur=i;
+  slides[cur].classList.add('active');
+  slides[cur].classList.remove('prev');
+  dots.forEach((d,k)=>d.classList.toggle('on',k===i));
+  bar.style.width=((i+1)/N*100)+'%';
+}
+function next(){go(cur+1)} function prev(){go(cur-1)}
+
+addEventListener('keydown',e=>{
+  if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();next();}
+  else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();prev();}
+  else if(e.key==='Home')go(0); else if(e.key==='End')go(N-1);
+  else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
+});
+addEventListener('click',e=>{
+  if(e.target.closest('#dots')||e.target.closest('.navhint'))return;
+  (e.clientX<innerWidth*0.35)?prev():next();
+});
+
+function fit(){
+  const s=Math.min(innerWidth/1920,innerHeight/1080);
+  document.getElementById('stage').style.setProperty('--s',s);
+}
+addEventListener('resize',fit);
+fit();go(0);
+</script>
+</body>
+</html>

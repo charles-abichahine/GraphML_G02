@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "PowerShell(cd \"C:\\Users\\charl\\Desktop\\iaac\\MaCad\\01-year-I\\03-module-3\\aia26 - s.3 graph ml\\GraphML_G02\"; python 04_presentation/pdf.py*)"
-    ]
-  }
-}
